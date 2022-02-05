@@ -122,6 +122,7 @@ class PlayState extends MusicBeatState
 	public static var curStage:String = '';
 	public static var isPixelStage:Bool = false;
 	public static var SONG:SwagSong = null;
+	public static var backGround:StageData;
 	public static var isStoryMode:Bool = false;
 	public static var storyWeek:Int = 0;
 	public static var storyPlaylist:Array<String> = [];
@@ -400,7 +401,7 @@ class PlayState extends MusicBeatState
 						image: "stagecurtains",
 						scrollfactor: [0.9, 0.9],
 						offset: [-500, -300],
-					},
+					}
 				],
 			
 				boyfriend: [770, 100],
@@ -417,12 +418,21 @@ class PlayState extends MusicBeatState
 		DAD_X = stageData.opponent[0];
 		DAD_Y = stageData.opponent[1];
 
+		var layerArray = stageData.layers;
+		for (i in 0...layerArray.length)
+			{
+				for (stuff in layerArray[i])
+					{
+						var layer:BGSprite = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
+						add(layer);
+					}
+			}
+		
 		boyfriendGroup = new FlxSpriteGroup(BF_X, BF_Y);
 		dadGroup = new FlxSpriteGroup(DAD_X, DAD_Y);
 		gfGroup = new FlxSpriteGroup(GF_X, GF_Y);
 		
-
-		/*switch (curStage)
+		switch (curStage)
 		{
 			case 'stage': //Week 1
 				var bg:BGSprite = new BGSprite('stageback', -600, -200, 0.9, 0.9);
@@ -673,10 +683,10 @@ class PlayState extends MusicBeatState
 				GameOverSubstate.endSoundName = 'gameOverEnd-pixel';
 				GameOverSubstate.characterName = 'bf-pixel-dead';
 
-				/*if(!ClientPrefs.lowQuality) { //Does this even do something?
+				if(!ClientPrefs.lowQuality) { //Does this even do something?
 					var waveEffectBG = new FlxWaveEffect(FlxWaveMode.ALL, 2, -1, 3, 2);
 					var waveEffectFG = new FlxWaveEffect(FlxWaveMode.ALL, 2, -1, 5, 2);
-				}*/
+				}
 				var posX = 400;
 				var posY = 200;
 				if(!ClientPrefs.lowQuality) {
@@ -697,7 +707,7 @@ class PlayState extends MusicBeatState
 					bg.antialiasing = false;
 					add(bg);
 				}
-		}*/
+		}
 
 		if(isPixelStage) {
 			introSoundsSuffix = '-pixel';
@@ -760,6 +770,7 @@ class PlayState extends MusicBeatState
 				}
 			}
 		}
+		
 		#end
 		
 

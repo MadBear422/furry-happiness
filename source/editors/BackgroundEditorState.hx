@@ -90,7 +90,7 @@ class BackgroundEditorState extends MusicBeatState
 						image: "stagecurtains",
 						scrollfactor: [0.9, 0.9],
 						offset: [-500, -300],
-					},
+					}
 				],
 			
 				boyfriend: [770, 100],
