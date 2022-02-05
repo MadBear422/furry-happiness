@@ -10,7 +10,10 @@ import openfl.net.FileReference;
 import flixel.system.debug.interaction.tools.Pointer.GraphicCursorCross;
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.util.FlxColor;
 import flixel.FlxObject;
+import flixel.FlxCamera;
+import flixel.text.FlxText;
 import Character;
 import StageData;
 import FunkinLua;
@@ -34,47 +37,106 @@ class BackgroundEditorState extends MusicBeatState
 	public var gf:Character;
 	public var boyfriend:Character;
 
+	var gfCharacter:String = 'gf';
+	var dadCharacter:String = 'dad';
+	var bfCharacter:String = 'bf';
+
+	public var defaultCamZoom:Float = 1.05;
+
 	var camFollow:FlxObject;
 
+	private var camHUD:FlxCamera;
+	private var camGame:FlxCamera;
+	private var camMenu:FlxCamera;
+
     override function create() {
+
+		camGame = new FlxCamera();
+		camHUD = new FlxCamera();
+		camHUD.bgColor.alpha = 0;
+		camMenu = new FlxCamera();
+		camMenu.bgColor.alpha = 0;
+
+		FlxG.cameras.reset(camGame);
+		FlxG.cameras.add(camHUD);
+		FlxG.cameras.add(camMenu);
+
+		FlxCamera.defaultCameras = [camGame];
 
 		camFollow = new FlxObject(0, 0, 2, 2);
 		camFollow.screenCenter();
 		add(camFollow);
 
-		FlxG.camera.follow(camFollow);
-
-		// Characters
-		gf = new Character(400, 130, 'gf');
-		gf.x += gf.positionArray[0];
-		gf.y += gf.positionArray[1];
-		gf.scrollFactor.set(0.95, 0.95);
-		add(gf);
-
-		dad = new Character(100, 100, 'dad');
-		dad.x += dad.positionArray[0];
-		dad.y += dad.positionArray[1];
-		add(dad);
-
-		boyfriend = new Character(770, 100, 'bf', true);
-		boyfriend.x += boyfriend.positionArray[0];
-		boyfriend.y += boyfriend.positionArray[1];
-		add(boyfriend);
-
-
+		//Character Pos
 		var stageData:StageFile = StageData.getStageFile(PlayState.curStage);
 		if(stageData == null) { //Stage couldn't be found, create a dummy stage for preventing a crash
 			stageData = {
 				directory: "",
 				defaultZoom: 0.9,
 				isPixelStage: false,
+
+				layers: [
+					{
+						image: "stageback",
+						scrollfactor: [0.9, 0.9],
+						offset: [-600, -200],
+					},
+					{
+						image: "stagefront",
+						scrollfactor: [0.9, 0.9],
+						offset: [-650, 600],
+					},
+					{
+						image: "stagecurtains",
+						scrollfactor: [0.9, 0.9],
+						offset: [-500, -300],
+					},
+				],
 			
 				boyfriend: [770, 100],
 				girlfriend: [400, 130],
 				opponent: [100, 100]
 			};
 		}
+
+		defaultCamZoom = stageData.defaultZoom;
+		//isPixelStage = stageData.isPixelStage; Do this shit later
+		BF_X = stageData.boyfriend[0];
+		BF_Y = stageData.boyfriend[1];
+		GF_X = stageData.girlfriend[0];
+		GF_Y = stageData.girlfriend[1];
+		DAD_X = stageData.opponent[0];
+		DAD_Y = stageData.opponent[1];
+
+		// Characters
+		gf = new Character(GF_X, GF_Y, gfCharacter);
+		startCharacterPos(gf);
+		gf.scrollFactor.set(0.95, 0.95);
+		add(gf);
+
+		dad = new Character(DAD_X, DAD_Y, dadCharacter);
+		startCharacterPos(dad, true);
+		add(dad);
+		
+		boyfriend = new Boyfriend(BF_X, BF_Y, bfCharacter);
+		startCharacterPos(boyfriend);
+		add(boyfriend);
         
+		// Pro Tips
+		var tipText:FlxText = new FlxText(FlxG.width - 20, FlxG.height, 0,
+			"E/Q - Camera Zoom In/Out
+			\nJKLI - Move Camera
+			\nR - Reset Camera Zoom
+			\nHold Shift to Move 10x faster\n", 12);
+		tipText.cameras = [camHUD];
+		tipText.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		tipText.scrollFactor.set();
+		tipText.borderSize = 1;
+		tipText.x -= tipText.width;
+		tipText.y -= tipText.height - 10;
+		add(tipText);
+
+		FlxG.camera.follow(camFollow);
     }
 
 	override function update(elapsed:Float)

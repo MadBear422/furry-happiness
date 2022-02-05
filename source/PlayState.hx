@@ -381,16 +381,32 @@ class PlayState extends MusicBeatState
 
 		var stageData:StageFile = StageData.getStageFile(curStage);
 		if(stageData == null) { //Stage couldn't be found, create a dummy stage for preventing a crash
-			stageData = {
-				directory: "",
+					directory: "",
 				defaultZoom: 0.9,
 				isPixelStage: false,
+
+				layers: [
+					{
+						image: "stageback",
+						scrollfactor: [0.9, 0.9],
+						offset: [-600, -200],
+					},
+					{
+						image: "stagefront",
+						scrollfactor: [0.9, 0.9],
+						offset: [-650, 600],
+					},
+					{
+						image: "stagecurtains",
+						scrollfactor: [0.9, 0.9],
+						offset: [-500, -300],
+					},
+				],
 			
 				boyfriend: [770, 100],
 				girlfriend: [400, 130],
 				opponent: [100, 100]
 			};
-		}
 
 		defaultCamZoom = stageData.defaultZoom;
 		isPixelStage = stageData.isPixelStage;
@@ -404,8 +420,9 @@ class PlayState extends MusicBeatState
 		boyfriendGroup = new FlxSpriteGroup(BF_X, BF_Y);
 		dadGroup = new FlxSpriteGroup(DAD_X, DAD_Y);
 		gfGroup = new FlxSpriteGroup(GF_X, GF_Y);
+		
 
-		switch (curStage)
+		/*switch (curStage)
 		{
 			case 'stage': //Week 1
 				var bg:BGSprite = new BGSprite('stageback', -600, -200, 0.9, 0.9);
@@ -680,7 +697,7 @@ class PlayState extends MusicBeatState
 					bg.antialiasing = false;
 					add(bg);
 				}
-		}
+		}*/
 
 		if(isPixelStage) {
 			introSoundsSuffix = '-pixel';

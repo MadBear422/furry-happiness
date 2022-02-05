@@ -16,10 +16,17 @@ typedef StageFile = {
 	var directory:String;
 	var defaultZoom:Float;
 	var isPixelStage:Bool;
+	
+	var layers:Array<LayerArray>;
 
 	var boyfriend:Array<Dynamic>;
 	var girlfriend:Array<Dynamic>;
 	var opponent:Array<Dynamic>;
+}
+typedef LayerArray = {
+	var image:String;
+	var scrollfactor:Array<Dynamic>;
+	var offset:Array<Dynamic>;
 }
 
 class StageData {
