@@ -16,9 +16,19 @@ import flixel.util.FlxColor;
 import flixel.FlxObject;
 import flixel.FlxCamera;
 import flixel.text.FlxText;
+import flixel.ui.FlxButton;
+import flixel.ui.FlxSpriteButton;
+import flixel.addons.ui.FlxUITabMenu;
+import flixel.addons.ui.FlxUI9SliceSprite;
+import flixel.addons.ui.FlxUI;
+import flixel.addons.ui.FlxUICheckBox;
+import flixel.addons.ui.FlxUIInputText;
+import flixel.addons.ui.FlxUINumericStepper;
+import flixel.addons.ui.FlxUITooltip.FlxUITooltipStyle;
 import Character;
 import StageData;
 import FunkinLua;
+import flixel.math.FlxPoint;
 
 #if MODS_ALLOWED
 import sys.FileSystem;
@@ -57,9 +67,15 @@ class BackgroundEditorState extends MusicBeatState
 	private var camGame:FlxCamera;
 	private var camMenu:FlxCamera;
 
+	var dadPosText:FlxText;
+	var bfPosText:FlxText;
+
     override function create() {
 		FlxG.sound.playMusic(Paths.music('lilBitBack'));
 		Conductor.changeBPM(125);
+
+		FlxG.mouse.visible = true;
+		FlxG.mouse.enabled = true;
 
 		camGame = new FlxCamera();
 		camHUD = new FlxCamera();
@@ -76,6 +92,13 @@ class BackgroundEditorState extends MusicBeatState
 		camFollow = new FlxObject(0, 0, 2, 2);
 		camFollow.screenCenter();
 		add(camFollow);
+
+		var saveBGButton:FlxButton = new FlxButton(1100, 400, "Save BG", function() {
+			trace(stageData);
+			saveBackground();
+		});
+		saveBGButton.cameras = [camHUD];
+		add(saveBGButton);
 
 		//Character Pos
 		//var stageData:StageFile = StageData.getStageFile(curStage);
@@ -176,8 +199,21 @@ class BackgroundEditorState extends MusicBeatState
 		tipText.y -= tipText.height - 10;
 		add(tipText);
 
+		dadPosText = new FlxText(FlxG.width - 20, FlxG.height, 0,
+			"dad.y = " + dad.y + "\ndad.x" + dad.x, 12);
+		dadPosText.cameras = [camHUD];
+		dadPosText.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		add(dadPosText);
+
 		FlxG.camera.follow(camFollow);
     }
+
+	var startMousePos:FlxPoint = new FlxPoint();
+	var holdingObjectType:Null<Bool> = null;
+	var startCharacterOffset:FlxPoint = new FlxPoint();
+	var mousePos:FlxPoint;
+
+	var characterMoved:String = "dad";
 
 	override function update(elapsed:Float)
 	{
@@ -239,14 +275,61 @@ class BackgroundEditorState extends MusicBeatState
 			FlxG.camera.zoom -= elapsed * FlxG.camera.zoom;
 			if(FlxG.camera.zoom < 0.1) FlxG.camera.zoom = 0.1;
 		}
-
-		if (FlxG.keys.justPressed.P)
+		
+		if (FlxG.mouse.justPressed)
+		{
+			holdingObjectType = null;
+			FlxG.mouse.getScreenPosition(camHUD, startMousePos);
+			if (startMousePos.x - dad.x >= 0 && startMousePos.x - dad.x <= dad.width &&
+				startMousePos.y - dad.y >= 0 && startMousePos.y - dad.y <= dad.height)
 			{
-				trace(stageData);
-				saveBackground();
+				holdingObjectType = true;
+				characterMoved = 'dad';
+				startCharacterOffset.x = dad.x;
+				startCharacterOffset.y = dad.y;
 			}
+			else if (startMousePos.x - boyfriend.x >= 0 && startMousePos.x - boyfriend.x <= boyfriend.width &&
+						startMousePos.y - boyfriend.y >= 0 && startMousePos.y - boyfriend.y <= boyfriend.height)
+			{
+				holdingObjectType = true;
+				characterMoved = 'bf';
+				startCharacterOffset.x = boyfriend.x;
+				startCharacterOffset.y = boyfriend.y;
+			}
+		}
+		if(FlxG.mouse.justReleased) {
+			holdingObjectType = null;
+		}
+
+		if(holdingObjectType != null)
+		{
+			if(FlxG.mouse.justMoved)
+			{
+				mousePos = FlxG.mouse.getScreenPosition();
+				repositionCharacters();
+			}
+		}
 
 		super.update(elapsed);
+	}
+
+	function repositionCharacters()
+	{
+		if (characterMoved == 'dad')
+		{
+			dad.x = mousePos.x;
+			dad.y = mousePos.y;
+		}
+		else if (characterMoved == 'bf')
+		{
+			boyfriend.x = mousePos.x;
+			boyfriend.y = mousePos.y;
+		}
+		reloadText();
+	}
+
+	function reloadText() {
+		dadPosText.text = "dad.y " + dad.y + "\ndad.x " + dad.x;
 	}
 
 	/*override function beatHit()
