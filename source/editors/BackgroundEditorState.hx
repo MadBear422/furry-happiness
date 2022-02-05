@@ -70,6 +70,8 @@ class BackgroundEditorState extends MusicBeatState
 	var dadPosText:FlxText;
 	var bfPosText:FlxText;
 
+	var newImage:String = "";
+
     override function create() {
 		FlxG.sound.playMusic(Paths.music('lilBitBack'));
 		Conductor.changeBPM(125);
@@ -99,6 +101,17 @@ class BackgroundEditorState extends MusicBeatState
 		});
 		saveBGButton.cameras = [camHUD];
 		add(saveBGButton);
+
+		var imageInputText:FlxUIInputText = new FlxUIInputText(saveBGButton.x - 150, saveBGButton.y + 75, 200, 'stagefront', 8);
+		var addImage:FlxButton = new FlxButton(imageInputText.x + 210, imageInputText.y - 3, "Add Image", function()
+		{
+			newImage = imageInputText.text;
+			reloadStageData();
+		});
+		imageInputText.cameras = [camHUD];
+		addImage.cameras = [camHUD];
+		add(imageInputText);
+		add(addImage);
 
 		//Character Pos
 		//var stageData:StageFile = StageData.getStageFile(curStage);
@@ -207,6 +220,10 @@ class BackgroundEditorState extends MusicBeatState
 
 		FlxG.camera.follow(camFollow);
     }
+
+	function reloadStageData() {
+		trace('does nothing yet');
+	}
 
 	var startMousePos:FlxPoint = new FlxPoint();
 	var holdingObjectType:Null<Bool> = null;
