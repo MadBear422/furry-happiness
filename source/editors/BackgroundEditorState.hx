@@ -50,6 +50,8 @@ class BackgroundEditorState extends MusicBeatState
 	private var camMenu:FlxCamera;
 
     override function create() {
+		FlxG.sound.playMusic(Paths.music('lilBitBack'));
+		Conductor.changeBPM(125);
 
 		camGame = new FlxCamera();
 		camHUD = new FlxCamera();
@@ -140,51 +142,61 @@ class BackgroundEditorState extends MusicBeatState
     }
 
 	override function update(elapsed:Float)
-		{
-			// Return back to editor
-			if (controls.BACK)
-				{
-					MusicBeatState.switchState(new editors.MasterEditorMenu());
-					FlxG.sound.playMusic(Paths.music('freakyMenu'));
-				}
-
-			// Navigate camera position
-			if (FlxG.keys.pressed.I || FlxG.keys.pressed.J || FlxG.keys.pressed.K || FlxG.keys.pressed.L)
-				{
-					var addToCam:Float = 500 * elapsed;
-					if (FlxG.keys.pressed.SHIFT)
-						addToCam *= 4;
-	
-					if (FlxG.keys.pressed.I)
-						camFollow.y -= addToCam;
-					else if (FlxG.keys.pressed.K)
-						camFollow.y += addToCam;
-	
-					if (FlxG.keys.pressed.J)
-						camFollow.x -= addToCam;
-					else if (FlxG.keys.pressed.L)
-						camFollow.x += addToCam;
-				}
-			
-			// Camera Zoom
-			if (FlxG.keys.justPressed.R) {
-				FlxG.camera.zoom = 1;
+	{
+		// Return back to editor
+		if (controls.BACK)
+			{
+				MusicBeatState.switchState(new editors.MasterEditorMenu());
+				FlxG.sound.music.stop();
+				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 			}
 
-			if (FlxG.keys.pressed.E && FlxG.camera.zoom < 3) {
-				FlxG.camera.zoom += elapsed * FlxG.camera.zoom;
-				if(FlxG.camera.zoom > 3) FlxG.camera.zoom = 3;
+		// Navigate camera position
+		if (FlxG.keys.pressed.I || FlxG.keys.pressed.J || FlxG.keys.pressed.K || FlxG.keys.pressed.L)
+			{
+				var addToCam:Float = 500 * elapsed;
+				if (FlxG.keys.pressed.SHIFT)
+					addToCam *= 4;
+
+				if (FlxG.keys.pressed.I)
+					camFollow.y -= addToCam;
+				else if (FlxG.keys.pressed.K)
+					camFollow.y += addToCam;
+
+				if (FlxG.keys.pressed.J)
+					camFollow.x -= addToCam;
+				else if (FlxG.keys.pressed.L)
+					camFollow.x += addToCam;
 			}
-			if (FlxG.keys.pressed.Q && FlxG.camera.zoom > 0.1) {
-				FlxG.camera.zoom -= elapsed * FlxG.camera.zoom;
-				if(FlxG.camera.zoom < 0.1) FlxG.camera.zoom = 0.1;
-			}
-
-
-
-
-			super.update(elapsed);
+		
+		// Camera Zoom
+		if (FlxG.keys.justPressed.R) {
+			FlxG.camera.zoom = 1;
 		}
+
+		if (FlxG.keys.pressed.E && FlxG.camera.zoom < 3) {
+			FlxG.camera.zoom += elapsed * FlxG.camera.zoom;
+			if(FlxG.camera.zoom > 3) FlxG.camera.zoom = 3;
+		}
+		if (FlxG.keys.pressed.Q && FlxG.camera.zoom > 0.1) {
+			FlxG.camera.zoom -= elapsed * FlxG.camera.zoom;
+			if(FlxG.camera.zoom < 0.1) FlxG.camera.zoom = 0.1;
+		}
+
+		super.update(elapsed);
+	}
+
+	override function beatHit()
+	{
+		super.beatHit();
+
+		if (curBeat % 2 == 0)
+		{
+			dad.dance();
+			boyfriend.dance();
+		}
+		gf.dance();
+	}
 
     function startCharacterPos(char:Character, ?gfCheck:Bool = false) {
 		if(gfCheck && char.curCharacter.startsWith('gf')) { //IF DAD IS GIRLFRIEND, HE GOES TO HER POSITION
@@ -194,12 +206,4 @@ class BackgroundEditorState extends MusicBeatState
 		char.x += char.positionArray[0];
 		char.y += char.positionArray[1];
 	}
-
-	/*override public function beatHit()
-		{
-			super.beatHit();
-			dad.dance();
-			boyfriend.dance();
-		}*/
-
 }

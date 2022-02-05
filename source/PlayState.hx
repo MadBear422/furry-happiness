@@ -673,10 +673,10 @@ class PlayState extends MusicBeatState
 				GameOverSubstate.endSoundName = 'gameOverEnd-pixel';
 				GameOverSubstate.characterName = 'bf-pixel-dead';
 
-				/*if(!ClientPrefs.lowQuality) { //Does this even do something?
+				if(!ClientPrefs.lowQuality) { //Does this even do something?
 					var waveEffectBG = new FlxWaveEffect(FlxWaveMode.ALL, 2, -1, 3, 2);
 					var waveEffectFG = new FlxWaveEffect(FlxWaveMode.ALL, 2, -1, 5, 2);
-				}*/
+				}
 				var posX = 400;
 				var posY = 200;
 				if(!ClientPrefs.lowQuality) {
