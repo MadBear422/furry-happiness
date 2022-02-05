@@ -280,22 +280,21 @@ class BackgroundEditorState extends MusicBeatState
 		{
 			holdingObjectType = null;
 			FlxG.mouse.getScreenPosition(camHUD, startMousePos);
-			if (startMousePos.x - dad.x >= 0 && startMousePos.x - dad.x <= dad.width &&
-				startMousePos.y - dad.y >= 0 && startMousePos.y - dad.y <= dad.height)
+			if (FlxG.mouse.overlaps(dad))
 			{
 				holdingObjectType = true;
 				characterMoved = 'dad';
-				startCharacterOffset.x = dad.x;
-				startCharacterOffset.y = dad.y;
 			}
-			else if (startMousePos.x - boyfriend.x >= 0 && startMousePos.x - boyfriend.x <= boyfriend.width &&
-						startMousePos.y - boyfriend.y >= 0 && startMousePos.y - boyfriend.y <= boyfriend.height)
+			else if (FlxG.mouse.overlaps(boyfriend))
 			{
 				holdingObjectType = true;
 				characterMoved = 'bf';
-				startCharacterOffset.x = boyfriend.x;
-				startCharacterOffset.y = boyfriend.y;
 			}
+			else if (FlxG.mouse.overlaps(gf))
+				{
+					holdingObjectType = true;
+					characterMoved = 'gf';
+				}
 		}
 		if(FlxG.mouse.justReleased) {
 			holdingObjectType = null;
@@ -315,16 +314,31 @@ class BackgroundEditorState extends MusicBeatState
 
 	function repositionCharacters()
 	{
+		// Move the shitheads around
 		if (characterMoved == 'dad')
 		{
-			dad.x = mousePos.x;
-			dad.y = mousePos.y;
+			dad.x = mousePos.x - dad.width/2;
+			dad.y = mousePos.y - dad.height/2;
 		}
 		else if (characterMoved == 'bf')
 		{
-			boyfriend.x = mousePos.x;
-			boyfriend.y = mousePos.y;
+			boyfriend.x = mousePos.x - boyfriend.width/2;
+			boyfriend.y = mousePos.y - boyfriend.height/2;
 		}
+		else if (characterMoved == 'gf')
+			{
+				gf.x = mousePos.x - gf.width/2;
+				gf.y = mousePos.y - gf.height/2;
+			}
+		
+		//Make them save to json
+		stageData.girlfriend[0] = gf.x;
+		stageData.girlfriend[1] = gf.y;
+		stageData.boyfriend[0] = boyfriend.x;
+		stageData.boyfriend[1] = boyfriend.y;
+		stageData.opponent[0] = dad.x;
+		stageData.opponent[1] = dad.y;
+		
 		reloadText();
 	}
 
