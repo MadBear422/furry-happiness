@@ -143,6 +143,25 @@ class BackgroundEditorState extends MusicBeatState
 
 	override function update(elapsed:Float)
 	{
+		if (FlxG.keys.justPressed.SPACE)
+		{
+			boyfriend.playAnim('hey', true);
+			gf.playAnim('cheer', true);
+		}
+
+		if (boyfriend.animation.curAnim.finished)
+		{
+			boyfriend.dance();
+		}
+		if (gf.animation.curAnim.finished)
+		{
+			gf.dance();
+		}
+		if (dad.animation.curAnim.finished)
+		{
+			dad.dance();
+		}
+
 		// Return back to editor
 		if (controls.BACK)
 			{
@@ -186,17 +205,25 @@ class BackgroundEditorState extends MusicBeatState
 		super.update(elapsed);
 	}
 
-	override function beatHit()
+	/*override function beatHit()
 	{
 		super.beatHit();
 
-		if (curBeat % 2 == 0)
-		{
-			dad.dance();
-			boyfriend.dance();
+		if(curBeat % 2 == 0) {
+			if (boyfriend.animation.curAnim.name != null && !boyfriend.animation.curAnim.name.startsWith("sing"))
+			{
+				boyfriend.dance();
+			}
+			if (dad.animation.curAnim.name != null && !dad.animation.curAnim.name.startsWith("sing") && !dad.stunned)
+			{
+				dad.dance();
+			}
 		}
-		gf.dance();
-	}
+		if (curBeat % 1 == 0 && !gf.stunned && gf.animation.curAnim.name != null && !gf.animation.curAnim.name.startsWith("sing"))
+		{
+			gf.dance();
+		}
+	}*/
 
     function startCharacterPos(char:Character, ?gfCheck:Bool = false) {
 		if(gfCheck && char.curCharacter.startsWith('gf')) { //IF DAD IS GIRLFRIEND, HE GOES TO HER POSITION
