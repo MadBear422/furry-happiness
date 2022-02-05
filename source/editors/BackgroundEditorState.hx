@@ -1,5 +1,7 @@
 package editors;
 
+import openfl.events.Event;
+import openfl.events.IOErrorEvent;
 #if desktop
 import Discord.DiscordClient;
 #end
@@ -26,6 +28,12 @@ using StringTools;
 
 class BackgroundEditorState extends MusicBeatState
 {
+
+	public var stageData:StageFile;
+
+	public var curStage:String = 'stage';
+	var _file:FileReference;
+
     public var BF_X:Float = 770;
 	public var BF_Y:Float = 100;
 	public var DAD_X:Float = 100;
@@ -70,8 +78,8 @@ class BackgroundEditorState extends MusicBeatState
 		add(camFollow);
 
 		//Character Pos
-		var stageData:StageFile = StageData.getStageFile(PlayState.curStage);
-		if(stageData == null) { //Stage couldn't be found, create a dummy stage for preventing a crash
+		//var stageData:StageFile = StageData.getStageFile(curStage);
+		//if(stageData == null) { //Stage couldn't be found, create a dummy stage for preventing a crash
 			stageData = {
 				directory: "",
 				defaultZoom: 0.9,
@@ -80,17 +88,37 @@ class BackgroundEditorState extends MusicBeatState
 				layers: [
 					{
 						image: "stageback",
+						flipX: false,
+						scale: 1,
 						scrollfactor: [0.9, 0.9],
 						offset: [-600, -200],
 					},
 					{
 						image: "stagefront",
+						flipX: false,
+						scale: 1.1,
 						scrollfactor: [0.9, 0.9],
 						offset: [-650, 600],
 					},
 					{
-						image: "stagecurtains",
+						image: "stage_light",
+						flipX: false,
+						scale: 1.1,
 						scrollfactor: [0.9, 0.9],
+						offset: [-125, -100],
+					},
+					{
+						image: "stage_light",
+						flipX: true,
+						scale: 1.1,
+						scrollfactor: [0.9, 0.9],
+						offset: [1225, -100],
+					},
+					{
+						image: "stagecurtains",
+						flipX: false,
+						scale: 0.9,
+						scrollfactor: [1.3, 1.3],
 						offset: [-500, -300],
 					}
 				],
@@ -99,7 +127,17 @@ class BackgroundEditorState extends MusicBeatState
 				girlfriend: [400, 130],
 				opponent: [100, 100]
 			};
-		}
+		//}
+
+		var layerArray = stageData.layers;
+		for (stuff in layerArray)
+			{
+				var layer:BGSprite = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
+				layer.setGraphicSize(Std.int(layer.width * stuff.scale));
+				layer.updateHitbox();
+				layer.flipX = stuff.flipX;
+				add(layer);
+			}
 
 		defaultCamZoom = stageData.defaultZoom;
 		//isPixelStage = stageData.isPixelStage; Do this shit later
@@ -202,6 +240,12 @@ class BackgroundEditorState extends MusicBeatState
 			if(FlxG.camera.zoom < 0.1) FlxG.camera.zoom = 0.1;
 		}
 
+		if (FlxG.keys.justPressed.P)
+			{
+				trace(stageData);
+				saveBackground();
+			}
+
 		super.update(elapsed);
 	}
 
@@ -233,4 +277,61 @@ class BackgroundEditorState extends MusicBeatState
 		char.x += char.positionArray[0];
 		char.y += char.positionArray[1];
 	}
+
+	function onSaveComplete(_):Void
+		{
+			_file.removeEventListener(Event.COMPLETE, onSaveComplete);
+			_file.removeEventListener(Event.CANCEL, onSaveCancel);
+			_file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
+			_file = null;
+			FlxG.log.notice("Successfully saved LEVEL DATA.");
+		}
+	
+		/**
+		 * Called when the save file dialog is cancelled.
+		 */
+		function onSaveCancel(_):Void
+		{
+			_file.removeEventListener(Event.COMPLETE, onSaveComplete);
+			_file.removeEventListener(Event.CANCEL, onSaveCancel);
+			_file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
+			_file = null;
+		}
+	
+		/**
+		 * Called if there is an error while saving the gameplay recording.
+		 */
+		function onSaveError(_):Void
+		{
+			_file.removeEventListener(Event.COMPLETE, onSaveComplete);
+			_file.removeEventListener(Event.CANCEL, onSaveCancel);
+			_file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
+			_file = null;
+			FlxG.log.error("Problem saving Level data");
+		}
+
+		function saveBackground() {
+			var json = {
+				"directory": stageData.directory,
+				"defaultZoom": stageData.defaultZoom,
+				"isPixelStage": stageData.isPixelStage,
+	
+				"layers": stageData.layers,
+	
+				"boyfriend": stageData.boyfriend,
+				"girlfriend": stageData.girlfriend,
+				"opponent": stageData.opponent
+			};
+	
+			var data:String = Json.stringify(json, "\t");
+	
+			if (data.length > 0)
+			{
+				_file = new FileReference();
+				_file.addEventListener(Event.COMPLETE, onSaveComplete);
+				_file.addEventListener(Event.CANCEL, onSaveCancel);
+				_file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
+				_file.save(data, curStage + ".json");
+			}
+		}
 }

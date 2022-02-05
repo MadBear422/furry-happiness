@@ -25,6 +25,8 @@ typedef StageFile = {
 }
 typedef LayerArray = {
 	var image:String;
+	var flipX:Bool;
+	var scale:Float;
 	var scrollfactor:Array<Dynamic>;
 	var offset:Array<Dynamic>;
 }
