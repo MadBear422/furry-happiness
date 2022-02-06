@@ -231,25 +231,6 @@ class BackgroundEditorState extends MusicBeatState
 		FlxG.camera.follow(camFollow);
     }
 
-	function reloadStageData() {
-		for (layer in bgLayer)
-			{
-				layer.kill();
-			}
-		var layerArray = stageData.layers;
-		for (stuff in layerArray)
-			{
-				var real:Int = 0;
-				var layer:BGSprite = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
-				layer.setGraphicSize(Std.int(layer.width * stuff.scale));
-				layer.updateHitbox();
-				layer.flipX = stuff.flipX;
-				layer.ID = real;
-				bgLayer.add(layer);
-				real++;
-			}
-	}
-
 	var startMousePos:FlxPoint = new FlxPoint();
 	var holdingObjectType:Null<Bool> = null;
 	var startCharacterOffset:FlxPoint = new FlxPoint();
@@ -407,6 +388,25 @@ class BackgroundEditorState extends MusicBeatState
 			gf.dance();
 		}
 	}*/
+
+	function reloadStageData() {
+		for (layer in bgLayer)
+			{
+				layer.kill();
+			}
+		var layerArray = stageData.layers;
+		for (stuff in layerArray)
+			{
+				var real:Int = 0;
+				var layer:BGSprite = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
+				layer.setGraphicSize(Std.int(layer.width * stuff.scale));
+				layer.updateHitbox();
+				layer.flipX = stuff.flipX;
+				layer.ID = real;
+				bgLayer.add(layer);
+				real++;
+			}
+	}
 
     function startCharacterPos(char:Character, ?gfCheck:Bool = false) {
 		if(gfCheck && char.curCharacter.startsWith('gf')) { //IF DAD IS GIRLFRIEND, HE GOES TO HER POSITION
