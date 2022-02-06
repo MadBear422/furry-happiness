@@ -72,6 +72,12 @@ class BackgroundEditorState extends MusicBeatState
 	var bfPosText:FlxText;
 
 	var newImage:String = "";
+	var removeImageInputText:FlxUIInputText;
+	var removeImageButton:FlxButton;
+	var imageInputText:FlxUIInputText;
+	var addImageButton:FlxButton;
+
+	var layer:BGSprite;
 
     override function create() {
 
@@ -107,18 +113,35 @@ class BackgroundEditorState extends MusicBeatState
 		saveBGButton.cameras = [camHUD];
 		add(saveBGButton);
 
-		var imageInputText:FlxUIInputText = new FlxUIInputText(saveBGButton.x - 150, saveBGButton.y + 75, 200, 'stagefront', 8);
-		var addImage:FlxButton = new FlxButton(imageInputText.x + 210, imageInputText.y - 3, "Add Image", function()
+		imageInputText = new FlxUIInputText(saveBGButton.x - 150, saveBGButton.y + 75, 200, 'stagefront', 8);
+		addImageButton = new FlxButton(imageInputText.x + 210, imageInputText.y - 3, "Add Image", function()
 		{
 			addImage(imageInputText.text);
 			reloadStageData();
 		});
 		imageInputText.cameras = [camHUD];
-		addImage.cameras = [camHUD];
+		addImageButton.cameras = [camHUD];
 		imageInputText.updateHitbox();
-		addImage.updateHitbox();
+		addImageButton.updateHitbox();
+		imageInputText.scrollFactor.set();
+		addImageButton.scrollFactor.set();
 		add(imageInputText);
-		add(addImage);
+		add(addImageButton);
+
+		removeImageInputText = new FlxUIInputText(imageInputText.x, imageInputText.y + 25, 200, 'stagefront', 8);
+		removeImageButton = new FlxButton(removeImageInputText.x + 210, removeImageInputText.y - 3, "Remove Image", function()
+		{
+			removeImage(imageInputText.text);
+			reloadStageData();
+		});
+		removeImageInputText.cameras = [camHUD];
+		removeImageButton.cameras = [camHUD];
+		removeImageInputText.updateHitbox();
+		removeImageButton.updateHitbox();
+		removeImageInputText.scrollFactor.set();
+		removeImageButton.scrollFactor.set();
+		add(removeImageInputText);
+		add(removeImageButton);
 
 		//Character Pos
 		stageData = StageData.getStageFile(curStage);
@@ -176,7 +199,7 @@ class BackgroundEditorState extends MusicBeatState
 		for (stuff in layerArray)
 			{
 				var real:Int = 0;
-				var layer:BGSprite = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
+				layer = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
 				layer.setGraphicSize(Std.int(layer.width * stuff.scale));
 				layer.updateHitbox();
 				layer.flipX = stuff.flipX;
@@ -314,10 +337,10 @@ class BackgroundEditorState extends MusicBeatState
 				characterMoved = 'bf';
 			}
 			else if (FlxG.mouse.overlaps(gf))
-				{
-					holdingObjectType = true;
-					characterMoved = 'gf';
-				}
+			{
+				holdingObjectType = true;
+				characterMoved = 'gf';
+			}
 		}
 		if(FlxG.mouse.justReleased) {
 			holdingObjectType = null;
@@ -349,10 +372,10 @@ class BackgroundEditorState extends MusicBeatState
 			boyfriend.y = mousePos.y - boyfriend.height/2;
 		}
 		else if (characterMoved == 'gf')
-			{
-				gf.x = mousePos.x - gf.width/2;
-				gf.y = mousePos.y - gf.height/2;
-			}
+		{
+			gf.x = mousePos.x - gf.width/2;
+			gf.y = mousePos.y - gf.height/2;
+		}
 		
 		//Make them save to json
 		stageData.girlfriend[0] = gf.x;
@@ -398,7 +421,7 @@ class BackgroundEditorState extends MusicBeatState
 		for (stuff in layerArray)
 			{
 				var real:Int = 0;
-				var layer:BGSprite = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
+				layer = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
 				layer.setGraphicSize(Std.int(layer.width * stuff.scale));
 				layer.updateHitbox();
 				layer.flipX = stuff.flipX;
@@ -428,6 +451,18 @@ class BackgroundEditorState extends MusicBeatState
 			}
 			stageData.layers.push(newImage);
 		}
+
+	function removeImage(file:String) {
+		//attempted to add removing images but failed :(
+		/*var funnyImage:LayerArray = {
+			image: file,
+			flipX: false,
+			scale: 1,
+			scrollfactor: [1.0, 1.0],
+			offset: [0, 0],
+		}
+		stageData.layers.remove(funnyImage);*/
+	}
 
 	function onSaveComplete(_):Void
 		{
