@@ -68,6 +68,8 @@ class BackgroundEditorState extends MusicBeatState
 	private var camGame:FlxCamera;
 	private var camMenu:FlxCamera;
 
+	var UI_box:FlxUITabMenu;
+
 	var dadPosText:FlxText;
 	var bfPosText:FlxText;
 
@@ -105,43 +107,6 @@ class BackgroundEditorState extends MusicBeatState
 		camFollow = new FlxObject(0, 0, 2, 2);
 		camFollow.screenCenter();
 		add(camFollow);
-
-		var saveBGButton:FlxButton = new FlxButton(1100, 400, "Save BG", function() {
-			trace(stageData);
-			saveBackground();
-		});
-		saveBGButton.cameras = [camHUD];
-		add(saveBGButton);
-
-		imageInputText = new FlxUIInputText(saveBGButton.x - 150, saveBGButton.y + 75, 200, 'stagefront', 8);
-		addImageButton = new FlxButton(imageInputText.x + 210, imageInputText.y - 3, "Add Image", function()
-		{
-			addImage(imageInputText.text);
-			reloadStageData();
-		});
-		imageInputText.cameras = [camHUD];
-		addImageButton.cameras = [camHUD];
-		imageInputText.updateHitbox();
-		addImageButton.updateHitbox();
-		imageInputText.scrollFactor.set();
-		addImageButton.scrollFactor.set();
-		add(imageInputText);
-		add(addImageButton);
-
-		removeImageInputText = new FlxUIInputText(imageInputText.x, imageInputText.y + 25, 200, 'stagefront', 8);
-		removeImageButton = new FlxButton(removeImageInputText.x + 210, removeImageInputText.y - 3, "Remove Image", function()
-		{
-			removeImage(imageInputText.text);
-			reloadStageData();
-		});
-		removeImageInputText.cameras = [camHUD];
-		removeImageButton.cameras = [camHUD];
-		removeImageInputText.updateHitbox();
-		removeImageButton.updateHitbox();
-		removeImageInputText.scrollFactor.set();
-		removeImageButton.scrollFactor.set();
-		add(removeImageInputText);
-		add(removeImageButton);
 
 		//Character Pos
 		stageData = StageData.getStageFile(curStage);
@@ -245,6 +210,21 @@ class BackgroundEditorState extends MusicBeatState
 		tipText.y -= tipText.height - 10;
 		add(tipText);
 
+		var tabs = [
+			//{name: 'Offsets', label: 'Offsets'},
+			{name: 'Settings', label: 'Settings'},
+		];
+
+		UI_box = new FlxUITabMenu(null, tabs, true);
+		UI_box.cameras = [camMenu];
+
+		UI_box.resize(350, 250);
+		UI_box.x = (FlxG.width - 275) - 100;
+		UI_box.y = UI_box.y + UI_box.height;
+		UI_box.scrollFactor.set();
+		add(UI_box);
+		addUI();
+
 		dadPosText = new FlxText(FlxG.width - 20, FlxG.height, 0,
 			"dad.y = " + dad.y + "\ndad.x" + dad.x, 12);
 		dadPosText.cameras = [camHUD];
@@ -322,20 +302,20 @@ class BackgroundEditorState extends MusicBeatState
 			if(FlxG.camera.zoom < 0.1) FlxG.camera.zoom = 0.1;
 		}
 		
-		if (FlxG.mouse.justPressed)
+		if (FlxG.mouse.justPressed && !FlxG.mouse.overlaps(UI_box))
 		{
 			holdingObjectType = null;
-			FlxG.mouse.getScreenPosition(camHUD, startMousePos);
-			if (FlxG.mouse.overlaps(dad))
-			{
-				holdingObjectType = true;
-				characterMoved = 'dad';
-			}
-			else if (FlxG.mouse.overlaps(boyfriend))
+			FlxG.mouse.getScreenPosition(camMenu, startMousePos);
+			if (FlxG.mouse.overlaps(boyfriend))
 			{
 				holdingObjectType = true;
 				characterMoved = 'bf';
 			}
+			else if (FlxG.mouse.overlaps(dad))
+				{
+					holdingObjectType = true;
+					characterMoved = 'dad';
+				}
 			else if (FlxG.mouse.overlaps(gf))
 			{
 				holdingObjectType = true;
@@ -354,27 +334,72 @@ class BackgroundEditorState extends MusicBeatState
 				repositionCharacters();
 			}
 		}
-
+		camMenu.zoom = FlxG.camera.zoom;
 		super.update(elapsed);
 	}
+
+	function addUI()
+		{
+			var tab_group = new FlxUI(null, UI_box);
+			tab_group.name = "Settings";
+
+			var saveBGButton:FlxButton = new FlxButton(10, 60, "Save BG", function() {
+				trace(stageData);
+				saveBackground();
+			});
+			//saveBGButton.cameras = [camHUD];
+	
+			imageInputText = new FlxUIInputText(saveBGButton.x - 150, saveBGButton.y + 75, 200, 'stagefront', 8);
+			addImageButton = new FlxButton(imageInputText.x + 210, imageInputText.y - 3, "Add Image", function()
+			{
+				addImage(imageInputText.text);
+				reloadStageData();
+			});
+			//imageInputText.cameras = [camHUD];
+			//addImageButton.cameras = [camHUD];
+			imageInputText.updateHitbox();
+			addImageButton.updateHitbox();
+			imageInputText.scrollFactor.set();
+			addImageButton.scrollFactor.set();
+	
+			removeImageInputText = new FlxUIInputText(imageInputText.x, imageInputText.y + 25, 200, 'stagefront', 8);
+			removeImageButton = new FlxButton(removeImageInputText.x + 210, removeImageInputText.y - 3, "Remove Image", function()
+			{
+				removeImage(imageInputText.text);
+				reloadStageData();
+			});
+			//removeImageInputText.cameras = [camHUD];
+			//removeImageButton.cameras = [camHUD];
+			removeImageInputText.updateHitbox();
+			removeImageButton.updateHitbox();
+			//removeImageInputText.scrollFactor.set();
+			//removeImageButton.scrollFactor.set();
+
+			tab_group.add(saveBGButton);
+			tab_group.add(imageInputText);
+			tab_group.add(addImageButton);
+			tab_group.add(removeImageInputText);
+			tab_group.add(removeImageButton);
+			UI_box.addGroup(tab_group);
+		}
 
 	function repositionCharacters()
 	{
 		// Move the shitheads around
 		if (characterMoved == 'dad')
 		{
-			dad.x = mousePos.x - dad.width/2;
-			dad.y = mousePos.y - dad.height/2;
+			dad.x = mousePos.x - dad.width*2 + camFollow.x;
+			dad.y = mousePos.y - dad.height + camFollow.y;
 		}
 		else if (characterMoved == 'bf')
 		{
-			boyfriend.x = mousePos.x - boyfriend.width/2;
-			boyfriend.y = mousePos.y - boyfriend.height/2;
+			boyfriend.x = mousePos.x - boyfriend.width*2 + camFollow.x;
+			boyfriend.y = mousePos.y - boyfriend.height + camFollow.y;
 		}
 		else if (characterMoved == 'gf')
 		{
-			gf.x = mousePos.x - gf.width/2;
-			gf.y = mousePos.y - gf.height/2;
+			gf.x = mousePos.x - gf.width*1.5 + camFollow.x;
+			gf.y = mousePos.y - gf.height + camFollow.y;
 		}
 		
 		//Make them save to json
