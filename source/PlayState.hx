@@ -2447,6 +2447,11 @@ class PlayState extends MusicBeatState
 			MusicBeatState.switchState(new CharacterEditorState(SONG.player2));
 		}
 
+		if (FlxG.keys.justPressed.SIX)
+		{
+			MusicBeatState.switchState(new editors.BackgroundEditorState());
+		}
+
 		if (startingSong)
 		{
 			if (startedCountdown)

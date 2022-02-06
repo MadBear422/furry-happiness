@@ -72,10 +72,14 @@ class BackgroundEditorState extends MusicBeatState
 
 	var dadPosText:FlxText;
 	var bfPosText:FlxText;
+	var gfPosText:FlxText;
+	var dadPosNum:FlxText;
+	var bfPosNum:FlxText;
+	var gfPosNum:FlxText;
+	var layerNum:FlxText;
 
 	var newImage:String = "";
-	var removeImageInputText:FlxUIInputText;
-	var removeImageButton:FlxButton;
+	var stageDropDown:FlxUIDropDownMenuCustom;
 	var imageInputText:FlxUIInputText;
 	var addImageButton:FlxButton;
 
@@ -161,9 +165,9 @@ class BackgroundEditorState extends MusicBeatState
 		}
 		
 		var layerArray = stageData.layers;
+		var real:Int = 0;
 		for (stuff in layerArray)
 			{
-				var real:Int = 0;
 				layer = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
 				layer.setGraphicSize(Std.int(layer.width * stuff.scale));
 				layer.updateHitbox();
@@ -175,26 +179,7 @@ class BackgroundEditorState extends MusicBeatState
 
 		defaultCamZoom = stageData.defaultZoom;
 		//isPixelStage = stageData.isPixelStage; Do this shit later
-		BF_X = stageData.boyfriend[0];
-		BF_Y = stageData.boyfriend[1];
-		GF_X = stageData.girlfriend[0];
-		GF_Y = stageData.girlfriend[1];
-		DAD_X = stageData.opponent[0];
-		DAD_Y = stageData.opponent[1];
-
-		// Characters
-		gf = new Character(GF_X, GF_Y, gfCharacter);
-		startCharacterPos(gf);
-		gf.scrollFactor.set(0.95, 0.95);
-		add(gf);
-
-		dad = new Character(DAD_X, DAD_Y, dadCharacter);
-		startCharacterPos(dad, true);
-		add(dad);
-		
-		boyfriend = new Boyfriend(BF_X, BF_Y, bfCharacter);
-		startCharacterPos(boyfriend);
-		add(boyfriend);
+		spawnCharacters();
         
 		// Pro Tips
 		var tipText:FlxText = new FlxText(FlxG.width - 20, FlxG.height, 0,
@@ -225,11 +210,63 @@ class BackgroundEditorState extends MusicBeatState
 		add(UI_box);
 		addUI();
 
-		dadPosText = new FlxText(FlxG.width - 20, FlxG.height, 0,
-			"dad.y = " + dad.y + "\ndad.x" + dad.x, 12);
+		layerNum = new FlxText(FlxG.width - 1200, FlxG.height - 700, 0,
+			"Layer: " + curSelected, 12);
+		layerNum.cameras = [camHUD];
+		layerNum.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		layerNum.scrollFactor.set();
+		layerNum.borderSize = 1;
+		layerNum.x -= layerNum.width;
+		layerNum.y -= layerNum.height - 10;
+		add(layerNum);
+
+		dadPosText = new FlxText(layerNum.x, layerNum.y + 50, 0,
+			"Dad Y:\nDad X:", 12);
 		dadPosText.cameras = [camHUD];
 		dadPosText.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		dadPosText.scrollFactor.set();
+		dadPosText.borderSize = 1;
 		add(dadPosText);
+
+		bfPosText = new FlxText(dadPosText.x, dadPosText.y + 50, 0,
+			"Boyfriend Y:\nBoyfriend X:", 12);
+		bfPosText.cameras = [camHUD];
+		bfPosText.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		bfPosText.scrollFactor.set();
+		bfPosText.borderSize = 1;
+		add(bfPosText);
+
+		gfPosText = new FlxText(bfPosText.x, bfPosText.y + 50, 0,
+			"Girlfriend Y:\nGirlfriend X:", 12);
+		gfPosText.cameras = [camHUD];
+		gfPosText.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		gfPosText.scrollFactor.set();
+		gfPosText.borderSize = 1;
+		add(gfPosText);
+
+		dadPosNum = new FlxText(dadPosText.x + 65, dadPosText.y, 0,
+			"" + dad.y + "\n" + dad.x, 12);
+		dadPosNum.cameras = [camHUD];
+		dadPosNum.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		dadPosNum.scrollFactor.set();
+		dadPosNum.borderSize = 1;
+		add(dadPosNum);
+
+		bfPosNum = new FlxText(bfPosText.x + 115, bfPosText.y, 0,
+			"" + boyfriend.y + "\n" + boyfriend.x, 12);
+		bfPosNum.cameras = [camHUD];
+		bfPosNum.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		bfPosNum.scrollFactor.set();
+		bfPosNum.borderSize = 1;
+		add(bfPosNum);
+
+		gfPosNum = new FlxText(gfPosText.x + 115, gfPosText.y, 0,
+			"" + gf.y + "\n" + gf.x, 12);
+		gfPosNum.cameras = [camHUD];
+		gfPosNum.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		gfPosNum.scrollFactor.set();
+		gfPosNum.borderSize = 1;
+		add(gfPosNum);
 
 		FlxG.camera.follow(camFollow);
     }
@@ -240,6 +277,30 @@ class BackgroundEditorState extends MusicBeatState
 	var mousePos:FlxPoint;
 
 	var characterMoved:String = "dad";
+
+	function changeLayer(b:Int) {
+		curSelected += b;
+
+		if (curSelected < 0)
+		{
+			curSelected = 0;
+		}
+		else if (curSelected > stageData.layers.length-1)
+		{
+			curSelected = stageData.layers.length-1;
+		}
+
+		updateText();
+	}
+
+	function updateText() {
+		layerNum.text = "Layer: " + curSelected;
+		dadPosNum.text = "" + dad.y + "\n" + dad.x;
+		bfPosNum.text = "" + boyfriend.y + "\n" + boyfriend.x;
+		gfPosNum.text = "" + gf.y + "\n" + gf.x;
+	}
+
+	public static var curSelected:Int = 0;
 
 	override function update(elapsed:Float)
 	{
@@ -261,6 +322,26 @@ class BackgroundEditorState extends MusicBeatState
 		{
 			dad.dance();
 		}
+
+		if (FlxG.keys.justPressed.W)
+		{
+			changeLayer(1);
+		}
+		else if (FlxG.keys.justPressed.S)
+		{
+			changeLayer(-1);
+		}
+
+		bgLayer.forEach(function(layer:BGSprite)
+		{
+			if (layer.ID == curSelected)
+			{
+				if (FlxG.keys.justPressed.DELETE)
+				{
+					layer.kill();
+				}
+			}
+		});
 
 		// Return back to editor
 		if (FlxG.keys.justPressed.ESCAPE)
@@ -338,19 +419,47 @@ class BackgroundEditorState extends MusicBeatState
 		super.update(elapsed);
 	}
 
+	function spawnCharacters() {
+		BF_X = stageData.boyfriend[0];
+		BF_Y = stageData.boyfriend[1];
+		GF_X = stageData.girlfriend[0];
+		GF_Y = stageData.girlfriend[1];
+		DAD_X = stageData.opponent[0];
+		DAD_Y = stageData.opponent[1];
+
+		// Characters
+		gf = new Character(GF_X, GF_Y, gfCharacter);
+		startCharacterPos(gf);
+		gf.scrollFactor.set(0.95, 0.95);
+		add(gf);
+
+		dad = new Character(DAD_X, DAD_Y, dadCharacter);
+		startCharacterPos(dad, true);
+		add(dad);
+		
+		boyfriend = new Boyfriend(BF_X, BF_Y, bfCharacter);
+		startCharacterPos(boyfriend);
+		add(boyfriend);
+	}
+
+	private var blockPressWhileScrolling:Array<FlxUIDropDownMenuCustom> = [];
+	var stages:Array<String> = [];
+	var stageFile:Array<String> = CoolUtil.coolTextFile(Paths.txt('stageList'));
+	var tempMap:Map<String, Bool> = new Map<String, Bool>();
+
 	function addUI()
 		{
 			var tab_group = new FlxUI(null, UI_box);
 			tab_group.name = "Settings";
 
-			var saveBGButton:FlxButton = new FlxButton(10, 60, "Save BG", function() {
+			var saveBGButton:FlxButton = new FlxButton(25, 15, "Save BG", function() {
 				trace(stageData);
 				saveBackground();
 			});
 			//saveBGButton.cameras = [camHUD];
 	
-			imageInputText = new FlxUIInputText(saveBGButton.x - 150, saveBGButton.y + 75, 200, 'stagefront', 8);
-			addImageButton = new FlxButton(imageInputText.x + 210, imageInputText.y - 3, "Add Image", function()
+			imageInputText = new FlxUIInputText(saveBGButton.x - 10, saveBGButton.y + 25, 200, 'stagefront', 8);
+			addImageButton = new FlxButton(saveBGButton.x + 100, saveBGButton.y, "Add Image", function()
 			{
 				addImage(imageInputText.text);
 				reloadStageData();
@@ -362,24 +471,27 @@ class BackgroundEditorState extends MusicBeatState
 			imageInputText.scrollFactor.set();
 			addImageButton.scrollFactor.set();
 	
-			removeImageInputText = new FlxUIInputText(imageInputText.x, imageInputText.y + 25, 200, 'stagefront', 8);
-			removeImageButton = new FlxButton(removeImageInputText.x + 210, removeImageInputText.y - 3, "Remove Image", function()
+			for (i in 0...stageFile.length) { //Prevent duplicates
+				var stageToCheck:String = stageFile[i];
+				if(!tempMap.exists(stageToCheck)) {
+					stages.push(stageToCheck);
+				}
+				tempMap.set(stageToCheck, true);
+			}
+
+			stageDropDown = new FlxUIDropDownMenuCustom(225, 15, FlxUIDropDownMenuCustom.makeStrIdLabelArray(stages, true), function(character:String)
 			{
-				removeImage(imageInputText.text);
+				curStage = stages[Std.parseInt(character)];
+				changeStage();
 				reloadStageData();
 			});
-			//removeImageInputText.cameras = [camHUD];
-			//removeImageButton.cameras = [camHUD];
-			removeImageInputText.updateHitbox();
-			removeImageButton.updateHitbox();
-			//removeImageInputText.scrollFactor.set();
-			//removeImageButton.scrollFactor.set();
+			stageDropDown.selectedLabel = curStage;
+			blockPressWhileScrolling.push(stageDropDown);
 
 			tab_group.add(saveBGButton);
 			tab_group.add(imageInputText);
 			tab_group.add(addImageButton);
-			tab_group.add(removeImageInputText);
-			tab_group.add(removeImageButton);
+			tab_group.add(stageDropDown);
 			UI_box.addGroup(tab_group);
 		}
 
@@ -388,18 +500,18 @@ class BackgroundEditorState extends MusicBeatState
 		// Move the shitheads around
 		if (characterMoved == 'dad')
 		{
-			dad.x = mousePos.x - dad.width*2 + camFollow.x;
-			dad.y = mousePos.y - dad.height + camFollow.y;
+			dad.x = Math.round(mousePos.x - dad.width*2 + camFollow.x);
+			dad.y = Math.round(mousePos.y - dad.height + camFollow.y);
 		}
 		else if (characterMoved == 'bf')
 		{
-			boyfriend.x = mousePos.x - boyfriend.width*2 + camFollow.x;
-			boyfriend.y = mousePos.y - boyfriend.height + camFollow.y;
+			boyfriend.x = Math.round(mousePos.x - boyfriend.width*2 + camFollow.x);
+			boyfriend.y = Math.round(mousePos.y - boyfriend.height + camFollow.y);
 		}
 		else if (characterMoved == 'gf')
 		{
-			gf.x = mousePos.x - gf.width*1.5 + camFollow.x;
-			gf.y = mousePos.y - gf.height + camFollow.y;
+			gf.x = Math.round(mousePos.x - gf.width*1.5 + camFollow.x);
+			gf.y = Math.round(mousePos.y - gf.height + camFollow.y);
 		}
 		
 		//Make them save to json
@@ -410,11 +522,7 @@ class BackgroundEditorState extends MusicBeatState
 		stageData.opponent[0] = dad.x;
 		stageData.opponent[1] = dad.y;
 		
-		reloadText();
-	}
-
-	function reloadText() {
-		dadPosText.text = "dad.y " + dad.y + "\ndad.x " + dad.x;
+		updateText();
 	}
 
 	/*override function beatHit()
@@ -438,6 +546,7 @@ class BackgroundEditorState extends MusicBeatState
 	}*/
 
 	function reloadStageData() {
+		var real:Int = 0;
 		for (layer in bgLayer)
 			{
 				layer.kill();
@@ -445,7 +554,6 @@ class BackgroundEditorState extends MusicBeatState
 		var layerArray = stageData.layers;
 		for (stuff in layerArray)
 			{
-				var real:Int = 0;
 				layer = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
 				layer.setGraphicSize(Std.int(layer.width * stuff.scale));
 				layer.updateHitbox();
@@ -454,6 +562,14 @@ class BackgroundEditorState extends MusicBeatState
 				bgLayer.add(layer);
 				real++;
 			}
+	}
+
+	function changeStage() {
+		stageData = StageData.getStageFile(curStage);
+		remove(gf);
+		remove(dad);
+		remove(boyfriend);
+		spawnCharacters();
 	}
 
     function startCharacterPos(char:Character, ?gfCheck:Bool = false) {
