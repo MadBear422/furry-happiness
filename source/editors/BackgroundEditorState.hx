@@ -1,5 +1,6 @@
 package editors;
 
+import flixel.group.FlxGroup.FlxTypedGroup;
 import openfl.events.Event;
 import openfl.events.IOErrorEvent;
 #if desktop
@@ -38,10 +39,8 @@ using StringTools;
 
 class BackgroundEditorState extends MusicBeatState
 {
-
-	public var stageData:StageFile;
-
 	public var curStage:String = 'stage';
+	public var stageData:StageFile;
 	var _file:FileReference;
 
     public var BF_X:Float = 770;
@@ -63,6 +62,8 @@ class BackgroundEditorState extends MusicBeatState
 
 	var camFollow:FlxObject;
 
+	var bgLayer:FlxTypedGroup<BGSprite>;
+
 	private var camHUD:FlxCamera;
 	private var camGame:FlxCamera;
 	private var camMenu:FlxCamera;
@@ -73,6 +74,10 @@ class BackgroundEditorState extends MusicBeatState
 	var newImage:String = "";
 
     override function create() {
+
+		bgLayer = new FlxTypedGroup<BGSprite>();
+		add(bgLayer);
+
 		FlxG.sound.playMusic(Paths.music('lilBitBack'));
 		Conductor.changeBPM(125);
 
@@ -105,17 +110,19 @@ class BackgroundEditorState extends MusicBeatState
 		var imageInputText:FlxUIInputText = new FlxUIInputText(saveBGButton.x - 150, saveBGButton.y + 75, 200, 'stagefront', 8);
 		var addImage:FlxButton = new FlxButton(imageInputText.x + 210, imageInputText.y - 3, "Add Image", function()
 		{
-			newImage = imageInputText.text;
+			addImage(imageInputText.text);
 			reloadStageData();
 		});
 		imageInputText.cameras = [camHUD];
 		addImage.cameras = [camHUD];
+		imageInputText.updateHitbox();
+		addImage.updateHitbox();
 		add(imageInputText);
 		add(addImage);
 
 		//Character Pos
-		//var stageData:StageFile = StageData.getStageFile(curStage);
-		//if(stageData == null) { //Stage couldn't be found, create a dummy stage for preventing a crash
+		stageData = StageData.getStageFile(curStage);
+		if(stageData == null) { //Stage couldn't be found, create a dummy stage for preventing a crash
 			stageData = {
 				directory: "",
 				defaultZoom: 0.9,
@@ -163,16 +170,19 @@ class BackgroundEditorState extends MusicBeatState
 				girlfriend: [400, 130],
 				opponent: [100, 100]
 			};
-		//}
-
+		}
+		
 		var layerArray = stageData.layers;
 		for (stuff in layerArray)
 			{
+				var real:Int = 0;
 				var layer:BGSprite = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
 				layer.setGraphicSize(Std.int(layer.width * stuff.scale));
 				layer.updateHitbox();
 				layer.flipX = stuff.flipX;
-				add(layer);
+				layer.ID = real;
+				bgLayer.add(layer);
+				real++;
 			}
 
 		defaultCamZoom = stageData.defaultZoom;
@@ -222,7 +232,22 @@ class BackgroundEditorState extends MusicBeatState
     }
 
 	function reloadStageData() {
-		trace('does nothing yet');
+		for (layer in bgLayer)
+			{
+				layer.kill();
+			}
+		var layerArray = stageData.layers;
+		for (stuff in layerArray)
+			{
+				var real:Int = 0;
+				var layer:BGSprite = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
+				layer.setGraphicSize(Std.int(layer.width * stuff.scale));
+				layer.updateHitbox();
+				layer.flipX = stuff.flipX;
+				layer.ID = real;
+				bgLayer.add(layer);
+				real++;
+			}
 	}
 
 	var startMousePos:FlxPoint = new FlxPoint();
@@ -254,7 +279,7 @@ class BackgroundEditorState extends MusicBeatState
 		}
 
 		// Return back to editor
-		if (controls.BACK)
+		if (FlxG.keys.justPressed.ESCAPE)
 			{
 				MusicBeatState.switchState(new editors.MasterEditorMenu());
 				FlxG.sound.music.stop();
@@ -391,6 +416,18 @@ class BackgroundEditorState extends MusicBeatState
 		char.x += char.positionArray[0];
 		char.y += char.positionArray[1];
 	}
+
+	function addImage(file:String)
+		{
+			var newImage:LayerArray = {
+				image: file,
+				flipX: false,
+				scale: 1,
+				scrollfactor: [1.0, 1.0],
+				offset: [0, 0],
+			}
+			stageData.layers.push(newImage);
+		}
 
 	function onSaveComplete(_):Void
 		{
