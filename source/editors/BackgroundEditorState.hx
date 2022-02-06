@@ -39,7 +39,7 @@ using StringTools;
 
 class BackgroundEditorState extends MusicBeatState
 {
-	public var curStage:String = 'stage';
+	public var curStage:String;
 	public var stageData:StageFile;
 	var _file:FileReference;
 
