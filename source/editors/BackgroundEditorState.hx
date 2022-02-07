@@ -281,12 +281,8 @@ class BackgroundEditorState extends MusicBeatState
 		gfPosText.borderSize = 1;
 		add(gfPosText);
 
-		var offsetPosDad:Array<Dynamic> = updatePosArray(stageData.opponent, dad.positionArray);
-		var offsetPosGf:Array<Dynamic> = updatePosArray(stageData.girlfriend, gf.positionArray);
-		var offsetPosBf:Array<Dynamic> = updatePosArray(stageData.boyfriend, boyfriend.positionArray);
-
 		dadPosNum = new FlxText(dadPosText.x + 65, dadPosText.y, 0,
-			"" + offsetPosDad[0] + "\n" + offsetPosDad[1], 12);
+			"" + stageData.opponent[0] + "\n" + stageData.opponent[1], 12);
 		dadPosNum.cameras = [camHUD];
 		dadPosNum.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		dadPosNum.scrollFactor.set();
@@ -302,7 +298,7 @@ class BackgroundEditorState extends MusicBeatState
 		add(layerPosNum);
 
 		bfPosNum = new FlxText(bfPosText.x + 115, bfPosText.y, 0,
-			"" + offsetPosBf[0] + "\n" + offsetPosBf[1], 12);
+			"" + stageData.boyfriend[0] + "\n" + stageData.boyfriend[1], 12);
 		bfPosNum.cameras = [camHUD];
 		bfPosNum.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		bfPosNum.scrollFactor.set();
@@ -310,7 +306,7 @@ class BackgroundEditorState extends MusicBeatState
 		add(bfPosNum);
 
 		gfPosNum = new FlxText(gfPosText.x + 115, gfPosText.y, 0,
-			"" + offsetPosGf[0] + "\n" + offsetPosGf[1], 12);
+			"" + stageData.girlfriend[0] + "\n" + stageData.girlfriend[1], 12);
 		gfPosNum.cameras = [camHUD];
 		gfPosNum.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		gfPosNum.scrollFactor.set();
