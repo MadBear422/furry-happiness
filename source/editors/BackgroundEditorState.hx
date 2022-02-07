@@ -517,19 +517,19 @@ class BackgroundEditorState extends MusicBeatState
 			{
 				holdingObjectType = true;
 				characterMoved = 'bf';
-				startOffset.x = boyfriend.x; startOffset.y = boyfriend.y;
+				startOffset.x = boyfriend.x + boyfriend.positionArray[0]; startOffset.y = boyfriend.y + boyfriend.positionArray[1];
 			}
 			else if (FlxG.mouse.overlaps(dad))
 				{
 					holdingObjectType = true;
 					characterMoved = 'dad';
-					startOffset.x = dad.x; startOffset.y = dad.y;
+					startOffset.x = dad.x + dad.positionArray[0]; startOffset.y = dad.y + dad.positionArray[1];
 				}
 			else if (FlxG.mouse.overlaps(gf))
 			{
 				holdingObjectType = true;
 				characterMoved = 'gf';
-				startOffset.x = gf.x; startOffset.y = gf.y;
+				startOffset.x = gf.x + gf.positionArray[0]; startOffset.y = gf.y + gf.positionArray[1];
 			}
 			else
 				{
