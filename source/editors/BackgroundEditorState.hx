@@ -369,6 +369,14 @@ class BackgroundEditorState extends MusicBeatState
 				});
 		}
 
+	function reloadText () {
+		layerNum.text = "Layer: " + curSelected;
+		layerPosNum.text = "" + sillyLayer_X + "\n" + sillyLayer_Y;
+		dadPosNum.text = "" + stageData.opponent[0] + "\n" + stageData.opponent[1];
+		bfPosNum.text = "" + stageData.boyfriend[0] + "\n" + stageData.boyfriend[1];
+		gfPosNum.text = "" + stageData.girlfriend[0] + "\n" + stageData.girlfriend[1];
+	}
+
 	function updateText() {
 		var offsetPosDad:Array<Dynamic> = updatePosArrayText(stageData.opponent, dad.positionArray);
 		var offsetPosGf:Array<Dynamic> = updatePosArrayText(stageData.girlfriend, gf.positionArray);
@@ -680,7 +688,6 @@ class BackgroundEditorState extends MusicBeatState
 				curStage = stages[Std.parseInt(character)];
 				changeStage();
 				reloadStageData();
-				updateText();
 			});
 			stageDropDown.selectedLabel = curStage;
 			blockPressWhileScrolling.push(stageDropDown);
@@ -765,6 +772,7 @@ class BackgroundEditorState extends MusicBeatState
 				bgLayer.add(layer);
 				real++;
 			}
+			reloadText();
 	}
 
 	function changeStage() {
