@@ -347,7 +347,6 @@ class BackgroundEditorState extends MusicBeatState
 			{
 				curSelected = stageData.layers.length-1;
 			}
-		updateOffsetText();
 		updateText();
 		updateScale();
 	}
