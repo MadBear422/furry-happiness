@@ -281,8 +281,12 @@ class BackgroundEditorState extends MusicBeatState
 		gfPosText.borderSize = 1;
 		add(gfPosText);
 
+		var offsetPosDad:Array<Dynamic> = updatePosArray(stageData.opponent, dad.positionArray);
+		var offsetPosGf:Array<Dynamic> = updatePosArray(stageData.girlfriend, gf.positionArray);
+		var offsetPosBf:Array<Dynamic> = updatePosArray(stageData.boyfriend, boyfriend.positionArray);
+
 		dadPosNum = new FlxText(dadPosText.x + 65, dadPosText.y, 0,
-			"" + dad.x + "\n" + dad.y, 12);
+			"" + offsetPosDad[0] + "\n" + offsetPosDad[1], 12);
 		dadPosNum.cameras = [camHUD];
 		dadPosNum.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		dadPosNum.scrollFactor.set();
@@ -298,7 +302,7 @@ class BackgroundEditorState extends MusicBeatState
 		add(layerPosNum);
 
 		bfPosNum = new FlxText(bfPosText.x + 115, bfPosText.y, 0,
-			"" + boyfriend.x + "\n" + boyfriend.y, 12);
+			"" + offsetPosBf[0] + "\n" + offsetPosBf[1], 12);
 		bfPosNum.cameras = [camHUD];
 		bfPosNum.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		bfPosNum.scrollFactor.set();
@@ -306,7 +310,7 @@ class BackgroundEditorState extends MusicBeatState
 		add(bfPosNum);
 
 		gfPosNum = new FlxText(gfPosText.x + 115, gfPosText.y, 0,
-			"" + gf.x + "\n" + gf.y, 12);
+			"" + offsetPosGf[0] + "\n" + offsetPosGf[1], 12);
 		gfPosNum.cameras = [camHUD];
 		gfPosNum.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		gfPosNum.scrollFactor.set();
@@ -369,11 +373,15 @@ class BackgroundEditorState extends MusicBeatState
 		}
 
 	function updateText() {
+		var offsetPosDad:Array<Dynamic> = updatePosArray(stageData.opponent, dad.positionArray);
+		var offsetPosGf:Array<Dynamic> = updatePosArray(stageData.girlfriend, gf.positionArray);
+		var offsetPosBf:Array<Dynamic> = updatePosArray(stageData.boyfriend, boyfriend.positionArray);
+
 		layerNum.text = "Layer: " + curSelected;
 		layerPosNum.text = "" + sillyLayer_X + "\n" + sillyLayer_Y;
-		dadPosNum.text = "" + dad.y + "\n" + dad.x;
-		bfPosNum.text = "" + boyfriend.y + "\n" + boyfriend.x;
-		gfPosNum.text = "" + gf.y + "\n" + gf.x;
+		dadPosNum.text = "" + offsetPosDad[0] + "\n" + offsetPosDad[1];
+		bfPosNum.text = "" + offsetPosBf[0] + "\n" + offsetPosBf[1];
+		gfPosNum.text = "" + offsetPosGf[0] + "\n" + offsetPosGf[1];
 	}
 
 	public static var curSelected:Int = 0;
@@ -517,19 +525,19 @@ class BackgroundEditorState extends MusicBeatState
 			{
 				holdingObjectType = true;
 				characterMoved = 'bf';
-				startOffset.x = boyfriend.x + boyfriend.positionArray[0]; startOffset.y = boyfriend.y + boyfriend.positionArray[1];
+				startOffset.x = boyfriend.x; startOffset.y = boyfriend.y;
 			}
 			else if (FlxG.mouse.overlaps(dad))
 				{
 					holdingObjectType = true;
 					characterMoved = 'dad';
-					startOffset.x = dad.x + dad.positionArray[0]; startOffset.y = dad.y + dad.positionArray[1];
+					startOffset.x = dad.x; startOffset.y = dad.y;
 				}
 			else if (FlxG.mouse.overlaps(gf))
 			{
 				holdingObjectType = true;
 				characterMoved = 'gf';
-				startOffset.x = gf.x + gf.positionArray[0]; startOffset.y = gf.y + gf.positionArray[1];
+				startOffset.x = gf.x; startOffset.y = gf.y;
 			}
 			else
 				{
@@ -848,6 +856,14 @@ class BackgroundEditorState extends MusicBeatState
 			FlxG.log.error("Problem saving Level data");
 		}
 
+		function updatePosArray(char:Array<Dynamic>, pos:Array<Float>)
+			{
+				var outcome:Array<Dynamic> = [0,0];
+				outcome[0] = char[0] - pos[0];
+				outcome[1] = char[1] - pos[1];
+				return outcome;
+			}
+
 		function saveBackground() {
 			var json = {
 				"directory": stageData.directory,
@@ -856,9 +872,9 @@ class BackgroundEditorState extends MusicBeatState
 	
 				"layers": stageData.layers,
 	
-				"boyfriend": stageData.boyfriend,
-				"girlfriend": stageData.girlfriend,
-				"opponent": stageData.opponent
+				"boyfriend": updatePosArray(stageData.boyfriend, boyfriend.positionArray),
+				"girlfriend": updatePosArray(stageData.girlfriend, gf.positionArray),
+				"opponent": updatePosArray(stageData.opponent, dad.positionArray)
 			};
 	
 			var data:String = Json.stringify(json, "\t");
