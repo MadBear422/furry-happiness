@@ -7,6 +7,7 @@ import openfl.events.IOErrorEvent;
 import Discord.DiscordClient;
 #end
 import haxe.Json;
+import flixel.util.FlxColor;
 import haxe.format.JsonParser;
 import flixel.ui.FlxSpriteButton;
 import openfl.net.FileReference;
@@ -50,6 +51,9 @@ class BackgroundEditorState extends MusicBeatState
 	public var GF_X:Float = 400;
 	public var GF_Y:Float = 130;
 
+	var newShader:ColorSwap = new ColorSwap();
+	var oldShader:ColorSwap = new ColorSwap();
+
 	public var dad:Character;
 	public var gf:Character;
 	public var boyfriend:Character;
@@ -63,16 +67,19 @@ class BackgroundEditorState extends MusicBeatState
 	var camFollow:FlxObject;
 
 	var bgLayer:FlxTypedGroup<BGSprite>;
+	var bgLayerName:Array<String> = [];
 
 	private var camHUD:FlxCamera;
 	private var camGame:FlxCamera;
 	private var camMenu:FlxCamera;
 
 	var UI_box:FlxUITabMenu;
-
+	
+	var layerPosText:FlxText;
 	var dadPosText:FlxText;
 	var bfPosText:FlxText;
 	var gfPosText:FlxText;
+	var layerPosNum:FlxText;
 	var dadPosNum:FlxText;
 	var bfPosNum:FlxText;
 	var gfPosNum:FlxText;
@@ -84,8 +91,21 @@ class BackgroundEditorState extends MusicBeatState
 	var addImageButton:FlxButton;
 
 	var layer:BGSprite;
+	var layerName:String;
+
+	var sillyLayer_X:Float;
+	var sillyLayer_Y:Float;
+
+	var sillyWidth:Float;
+	var sillyHeight:Float;
+
+	var deleted:Bool = false;
 
     override function create() {
+
+		// Shader to indicate what layer is selected
+		newShader.brightness = 1;
+		oldShader.brightness = 0;
 
 		bgLayer = new FlxTypedGroup<BGSprite>();
 		add(bgLayer);
@@ -168,6 +188,8 @@ class BackgroundEditorState extends MusicBeatState
 		var real:Int = 0;
 		for (stuff in layerArray)
 			{
+				layerName = stuff.image;
+				bgLayerName.push(layerName);
 				layer = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
 				layer.setGraphicSize(Std.int(layer.width * stuff.scale));
 				layer.updateHitbox();
@@ -220,8 +242,16 @@ class BackgroundEditorState extends MusicBeatState
 		layerNum.y -= layerNum.height - 10;
 		add(layerNum);
 
-		dadPosText = new FlxText(layerNum.x, layerNum.y + 50, 0,
-			"Dad Y:\nDad X:", 12);
+		layerPosText = new FlxText(layerNum.x, layerNum.y + 25, 0,
+			"Layer X:\nLayer Y:", 12);
+		layerPosText.cameras = [camHUD];
+		layerPosText.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		layerPosText.scrollFactor.set();
+		layerPosText.borderSize = 1;
+		add(layerPosText);
+
+		dadPosText = new FlxText(layerPosText.x, layerPosText.y + 50, 0,
+			"Dad X:\nDad Y:", 12);
 		dadPosText.cameras = [camHUD];
 		dadPosText.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		dadPosText.scrollFactor.set();
@@ -229,7 +259,7 @@ class BackgroundEditorState extends MusicBeatState
 		add(dadPosText);
 
 		bfPosText = new FlxText(dadPosText.x, dadPosText.y + 50, 0,
-			"Boyfriend Y:\nBoyfriend X:", 12);
+			"Boyfriend X:\nBoyfriend Y:", 12);
 		bfPosText.cameras = [camHUD];
 		bfPosText.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		bfPosText.scrollFactor.set();
@@ -237,7 +267,7 @@ class BackgroundEditorState extends MusicBeatState
 		add(bfPosText);
 
 		gfPosText = new FlxText(bfPosText.x, bfPosText.y + 50, 0,
-			"Girlfriend Y:\nGirlfriend X:", 12);
+			"Girlfriend X:\nGirlfriend Y:", 12);
 		gfPosText.cameras = [camHUD];
 		gfPosText.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		gfPosText.scrollFactor.set();
@@ -245,15 +275,23 @@ class BackgroundEditorState extends MusicBeatState
 		add(gfPosText);
 
 		dadPosNum = new FlxText(dadPosText.x + 65, dadPosText.y, 0,
-			"" + dad.y + "\n" + dad.x, 12);
+			"" + dad.x + "\n" + dad.y, 12);
 		dadPosNum.cameras = [camHUD];
 		dadPosNum.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		dadPosNum.scrollFactor.set();
 		dadPosNum.borderSize = 1;
 		add(dadPosNum);
 
+		layerPosNum = new FlxText(layerPosText.x + 80, layerPosText.y, 0,
+			"" + sillyLayer_X + "\n" + sillyLayer_Y, 12);
+		layerPosNum.cameras = [camHUD];
+		layerPosNum.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		layerPosNum.scrollFactor.set();
+		layerPosNum.borderSize = 1;
+		add(layerPosNum);
+
 		bfPosNum = new FlxText(bfPosText.x + 115, bfPosText.y, 0,
-			"" + boyfriend.y + "\n" + boyfriend.x, 12);
+			"" + boyfriend.x + "\n" + boyfriend.y, 12);
 		bfPosNum.cameras = [camHUD];
 		bfPosNum.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		bfPosNum.scrollFactor.set();
@@ -261,7 +299,7 @@ class BackgroundEditorState extends MusicBeatState
 		add(bfPosNum);
 
 		gfPosNum = new FlxText(gfPosText.x + 115, gfPosText.y, 0,
-			"" + gf.y + "\n" + gf.x, 12);
+			"" + gf.x + "\n" + gf.y, 12);
 		gfPosNum.cameras = [camHUD];
 		gfPosNum.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		gfPosNum.scrollFactor.set();
@@ -282,19 +320,37 @@ class BackgroundEditorState extends MusicBeatState
 		curSelected += b;
 
 		if (curSelected < 0)
-		{
-			curSelected = 0;
-		}
-		else if (curSelected > stageData.layers.length-1)
-		{
-			curSelected = stageData.layers.length-1;
-		}
-
+			{
+				curSelected = 0;
+			}
+			else if (curSelected > stageData.layers.length-1)
+			{
+				curSelected = stageData.layers.length-1;
+			}
+		updateOffsetText();
 		updateText();
 	}
 
+	function updateOffsetText()
+		{
+			bgLayer.forEach(function(layer:BGSprite)
+				{
+					if (layer.ID == curSelected)
+					{
+						layer.alpha = 1;
+						layer.shader = newShader.shader;
+		
+						sillyLayer_X = layer.x;
+						sillyLayer_Y = layer.y;
+						sillyWidth = layer.width;
+						sillyHeight = layer.height;
+					}
+				});
+		}
+
 	function updateText() {
 		layerNum.text = "Layer: " + curSelected;
+		layerPosNum.text = "" + sillyLayer_X + "\n" + sillyLayer_Y;
 		dadPosNum.text = "" + dad.y + "\n" + dad.x;
 		bfPosNum.text = "" + boyfriend.y + "\n" + boyfriend.x;
 		gfPosNum.text = "" + gf.y + "\n" + gf.x;
@@ -304,6 +360,16 @@ class BackgroundEditorState extends MusicBeatState
 
 	override function update(elapsed:Float)
 	{
+
+		if (curSelected < 0)
+			{
+				curSelected = 0;
+			}
+			else if (curSelected > stageData.layers.length-1)
+			{
+				curSelected = stageData.layers.length-1;
+			}
+
 		if (FlxG.keys.justPressed.SPACE)
 		{
 			boyfriend.playAnim('hey', true);
@@ -331,17 +397,49 @@ class BackgroundEditorState extends MusicBeatState
 		{
 			changeLayer(-1);
 		}
-
 		bgLayer.forEach(function(layer:BGSprite)
 		{
 			if (layer.ID == curSelected)
 			{
-				if (FlxG.keys.justPressed.DELETE)
+
+				bgLayer.forEach(function(layer:BGSprite)
+					{
+						if (layer.ID == curSelected)
+						{
+							layer.alpha = 1;
+							layer.shader = newShader.shader;
+			
+							sillyLayer_X = layer.x;
+							sillyLayer_Y = layer.y;
+							sillyWidth = layer.width;
+							sillyHeight = layer.height;
+						}
+					});
+					
+				// Delete Fuckin Layers
+				if (FlxG.keys.justPressed.DELETE && !deleted)
 				{
+					deleted = true;
+							for (stuff in stageData.layers)
+								{
+									if (bgLayerName[curSelected] == stuff.image)
+										{
+											stageData.layers.remove(stuff);
+										}
+								}
+					trace("killed " + layer.ID);
 					layer.kill();
+					reloadStageData();
 				}
+
 			}
+			else
+				{
+					layer.shader = newShader.shader;
+					layer.alpha = 0.5;
+				}
 		});
+		deleted = false;
 
 		// Return back to editor
 		if (FlxG.keys.justPressed.ESCAPE)
@@ -402,9 +500,26 @@ class BackgroundEditorState extends MusicBeatState
 				holdingObjectType = true;
 				characterMoved = 'gf';
 			}
+			else
+				{
+					bgLayer.forEach(function(layer:BGSprite)
+						{
+							if (layer.ID == curSelected)
+								{
+									if (FlxG.mouse.overlaps(layer))
+										{
+											holdingObjectType = true;
+											characterMoved = 'layer';
+										}
+								}
+						});
+				}
+			
 		}
 		if(FlxG.mouse.justReleased) {
 			holdingObjectType = null;
+			// Update Layer Offsets
+			updateLayerData();
 		}
 
 		if(holdingObjectType != null)
@@ -412,11 +527,30 @@ class BackgroundEditorState extends MusicBeatState
 			if(FlxG.mouse.justMoved)
 			{
 				mousePos = FlxG.mouse.getScreenPosition();
-				repositionCharacters();
+				if (characterMoved == 'gf' || characterMoved == 'dad' || characterMoved == 'bf')
+					repositionCharacters();
+				else if (characterMoved == 'layer')
+					{
+						sillyLayer_X = Math.round(mousePos.x - sillyWidth/2);
+						sillyLayer_Y = Math.round(mousePos.y - sillyHeight/2);
+						moveLayer();
+					}
 			}
 		}
 		camMenu.zoom = FlxG.camera.zoom;
 		super.update(elapsed);
+	}
+
+	function moveLayer() {
+		bgLayer.forEach(function(layer:BGSprite)
+			{
+				if (layer.ID == curSelected)
+					{
+						layer.x = sillyLayer_X;
+						layer.y = sillyLayer_Y;
+					}
+			});
+			updateText();
 	}
 
 	function spawnCharacters() {
@@ -470,6 +604,12 @@ class BackgroundEditorState extends MusicBeatState
 			addImageButton.updateHitbox();
 			imageInputText.scrollFactor.set();
 			addImageButton.scrollFactor.set();
+
+			#if MODS_ALLOWED
+			var directories:Array<String> = [Paths.mods('stages/'), Paths.mods(Paths.currentModDirectory + '/stages/'), Paths.getPreloadPath('stages/')];
+			#else
+			var directories:Array<String> = [Paths.getPreloadPath('stages/')];
+			#end
 	
 			for (i in 0...stageFile.length) { //Prevent duplicates
 				var stageToCheck:String = stageFile[i];
@@ -552,8 +692,11 @@ class BackgroundEditorState extends MusicBeatState
 				layer.kill();
 			}
 		var layerArray = stageData.layers;
+		bgLayerName = [];
 		for (stuff in layerArray)
 			{
+				layerName = stuff.image;
+				bgLayerName.push(layerName);
 				layer = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
 				layer.setGraphicSize(Std.int(layer.width * stuff.scale));
 				layer.updateHitbox();
@@ -580,6 +723,18 @@ class BackgroundEditorState extends MusicBeatState
 		char.x += char.positionArray[0];
 		char.y += char.positionArray[1];
 	}
+
+	function updateLayerData()
+		{
+			for (stuff in stageData.layers)
+				{
+					if (bgLayerName[curSelected] == stuff.image)
+						{
+							stuff.offset[0] = sillyLayer_X;
+							stuff.offset[1] = sillyLayer_Y;
+						}
+				}
+		}
 
 	function addImage(file:String)
 		{
