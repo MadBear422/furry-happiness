@@ -13,6 +13,7 @@ import Song;
 using StringTools;
 
 typedef StageFile = {
+	//var name:String;
 	var directory:String;
 	var defaultZoom:Float;
 	var isPixelStage:Bool;
