@@ -212,6 +212,7 @@ class BackgroundEditorState extends MusicBeatState
 		var tipText:FlxText = new FlxText(FlxG.width - 20, FlxG.height, 0,
 			"Click and Drag the Assets to Move
 			\nQ/E - Change Layers
+			\nDELETE - Delete Selected Layer
 			\nMouse Wheel - Camera Zoom In/Out
 			\nMiddle Mouse - Move Camera
 			\nR - Reset Camera Zoom
@@ -369,9 +370,9 @@ class BackgroundEditorState extends MusicBeatState
 		}
 
 	function updateText() {
-		var offsetPosDad:Array<Dynamic> = updatePosArray(stageData.opponent, dad.positionArray);
-		var offsetPosGf:Array<Dynamic> = updatePosArray(stageData.girlfriend, gf.positionArray);
-		var offsetPosBf:Array<Dynamic> = updatePosArray(stageData.boyfriend, boyfriend.positionArray);
+		var offsetPosDad:Array<Dynamic> = updatePosArrayText(stageData.opponent, dad.positionArray);
+		var offsetPosGf:Array<Dynamic> = updatePosArrayText(stageData.girlfriend, gf.positionArray);
+		var offsetPosBf:Array<Dynamic> = updatePosArrayText(stageData.boyfriend, boyfriend.positionArray);
 
 		layerNum.text = "Layer: " + curSelected;
 		layerPosNum.text = "" + sillyLayer_X + "\n" + sillyLayer_Y;
@@ -679,6 +680,7 @@ class BackgroundEditorState extends MusicBeatState
 				curStage = stages[Std.parseInt(character)];
 				changeStage();
 				reloadStageData();
+				updateText();
 			});
 			stageDropDown.selectedLabel = curStage;
 			blockPressWhileScrolling.push(stageDropDown);
@@ -852,7 +854,15 @@ class BackgroundEditorState extends MusicBeatState
 			FlxG.log.error("Problem saving Level data");
 		}
 
-		function updatePosArray(char:Array<Dynamic>, pos:Array<Float>)
+		function updatePosArray(char:Character, pos:Array<Float>)
+			{
+				var outcome:Array<Dynamic> = [0,0];
+				outcome[0] = char.x - pos[0];
+				outcome[1] = char.y - pos[1];
+				return outcome;
+			}
+		
+		function updatePosArrayText(char:Array<Dynamic>, pos:Array<Float>)
 			{
 				var outcome:Array<Dynamic> = [0,0];
 				outcome[0] = char[0] - pos[0];
@@ -868,9 +878,9 @@ class BackgroundEditorState extends MusicBeatState
 	
 				"layers": stageData.layers,
 	
-				"boyfriend": updatePosArray(stageData.boyfriend, boyfriend.positionArray),
-				"girlfriend": updatePosArray(stageData.girlfriend, gf.positionArray),
-				"opponent": updatePosArray(stageData.opponent, dad.positionArray)
+				"boyfriend": updatePosArray(boyfriend, boyfriend.positionArray),
+				"girlfriend": updatePosArray(gf, gf.positionArray),
+				"opponent": updatePosArray(dad, dad.positionArray)
 			};
 	
 			var data:String = Json.stringify(json, "\t");
