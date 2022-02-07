@@ -275,6 +275,11 @@ class PlayState extends MusicBeatState
 	// Less laggy controls
 	private var keysArray:Array<Dynamic>;
 
+	//bgLayers for animations :)
+	var bgLayer:FlxTypedGroup<BGSprite>;
+	var bgLayerInFront:FlxTypedGroup<BGSprite>;
+	public var stageData:StageFile;
+
 	override public function create()
 	{
 		Paths.clearStoredMemory();
@@ -438,14 +443,26 @@ class PlayState extends MusicBeatState
 		DAD_X = stageData.opponent[0];
 		DAD_Y = stageData.opponent[1];
 
+		bgLayer = new FlxTypedGroup<BGSprite>();
+		add(bgLayer);
+
 		var layerArray = stageData.layers;
 		for (i in 0...layerArray.length)
 			{
 				for (stuff in layerArray)
+				{
+					if (!stuff.onFront)
 					{
 						var layer:BGSprite = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
-						add(layer);
+						if (stuff.animation != "")
+						{
+							layer.frames = Paths.getSparrowAtlas(stuff.image);
+							layer.animation.addByPrefix('anim', stuff.animation, 24, true);
+							layer.animation.play('anim', true);
+						}
+						bgLayer.add(layer);
 					}
+				}
 			}
 		
 		boyfriendGroup = new FlxSpriteGroup(BF_X, BF_Y);
@@ -741,6 +758,28 @@ class PlayState extends MusicBeatState
 
 		add(dadGroup);
 		add(boyfriendGroup);
+
+		bgLayerInFront = new FlxTypedGroup<BGSprite>();
+		add(bgLayerInFront);
+
+		var layerArray = stageData.layers;
+		for (i in 0...layerArray.length)
+		{
+			for (stuff in layerArray)
+			{
+				if (stuff.onFront)
+				{
+					var layer:BGSprite = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
+					if (stuff.animation != "")
+					{
+						layer.frames = Paths.getSparrowAtlas(stuff.image);
+						layer.animation.addByPrefix('anim', stuff.animation, 24, true);
+						layer.animation.play('anim', true);
+					}
+					bgLayerInFront.add(layer);
+				}
+			}
+		}
 		
 		if(curStage == 'spooky') {
 			add(halloweenWhite);
