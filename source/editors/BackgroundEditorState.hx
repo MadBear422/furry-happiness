@@ -89,7 +89,7 @@ class BackgroundEditorState extends MusicBeatState
 	var newImage:String = "";
 	var stageDropDown:FlxUIDropDownMenuCustom;
 	var imageInputText:FlxUIInputText;
-	var animInputText:FlxUIInputText;
+	var nameInputText:FlxUIInputText;
 	var addImageButton:FlxButton;
 	var addImageOnTopButton:FlxButton;
 
@@ -149,6 +149,7 @@ class BackgroundEditorState extends MusicBeatState
 
 				layers: [
 					{
+						name: "wall",
 						image: "stageback",
 						animation: "",
 						flipX: false,
@@ -158,6 +159,7 @@ class BackgroundEditorState extends MusicBeatState
 						onFront: false,
 					},
 					{
+						name: "floor",
 						image: "stagefront",
 						animation: "",
 						flipX: false,
@@ -167,6 +169,7 @@ class BackgroundEditorState extends MusicBeatState
 						onFront: false,
 					},
 					{
+						name: "light",
 						image: "stage_light",
 						animation: "",
 						flipX: false,
@@ -176,6 +179,7 @@ class BackgroundEditorState extends MusicBeatState
 						onFront: false,
 					},
 					{
+						name: "light_extra",
 						image: "stage_light",
 						animation: "",
 						flipX: true,
@@ -185,6 +189,7 @@ class BackgroundEditorState extends MusicBeatState
 						onFront: false,
 					},
 					{
+						name: "curtains",
 						image: "stagecurtains",
 						animation: "",
 						flipX: false,
@@ -205,7 +210,10 @@ class BackgroundEditorState extends MusicBeatState
 		var real:Int = 0;
 		for (stuff in layerArray)
 			{
-				layerName = stuff.image;
+				layerName = stuff.name;
+				if (bgLayerName.contains(stuff.name))
+				bgLayerName.push(layerName + '_extra');
+				else
 				bgLayerName.push(layerName);
 				layer = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
 				layer.setGraphicSize(Std.int(layer.width * stuff.scale));
@@ -228,8 +236,11 @@ class BackgroundEditorState extends MusicBeatState
 		var real:Int = 0;
 		for (stuff in layerArray)
 		{
-			layerName = stuff.image;
-			bgLayerName.push(layerName);
+			layerName = stuff.name;
+				if (bgLayerName.contains(stuff.name))
+				bgLayerName.push(layerName + '_extra');
+				else
+				bgLayerName.push(layerName);
 			layer = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
 			if (stuff.animation != "")
 			{
@@ -371,12 +382,22 @@ class BackgroundEditorState extends MusicBeatState
 
 	var characterMoved:String = "dad";
 
-	function updateScale() {
+	function updateSettingData() {
 		for (stuff in stageData.layers)
 			{
-				if (bgLayerName[curSelected] == stuff.image)
+				if (bgLayerName[curSelected] == stuff.name)
 					{
 						scaleStepper.value = stuff.scale;
+						scrollStepperX.value = stuff.scrollfactor[0];
+						scrollStepperY.value = stuff.scrollfactor[1];
+						if (stuff.flipX == false)
+							{
+								flipXCheckBox.checked = false;
+							}
+						else
+							{
+								flipXCheckBox.checked = true;
+							}
 					}
 			}
 	}
@@ -394,7 +415,8 @@ class BackgroundEditorState extends MusicBeatState
 			}
 		updateOffsetText();
 		updateText();
-		updateScale();
+		updateSettingData();
+		reloadStageData();
 	}
 
 	function updateOffsetText()
@@ -456,12 +478,17 @@ class BackgroundEditorState extends MusicBeatState
 				updateLayerData();
 				reloadStageData();
 			}
+			else if (sender == scrollStepperX || sender == scrollStepperY)
+				{
+					updateLayerData();
+					reloadStageData();
+				}
 		}
 	}
 
 	override function update(elapsed:Float)
 	{
-		if (imageInputText.hasFocus || animInputText.hasFocus)
+		if (imageInputText.hasFocus || nameInputText.hasFocus)
 			{
 				if(FlxG.keys.justPressed.ENTER) {
 					imageInputText.hasFocus = false;
@@ -519,7 +546,7 @@ class BackgroundEditorState extends MusicBeatState
 					deleted = true;
 							for (stuff in stageData.layers)
 								{
-									if (bgLayerName[curSelected] == stuff.image)
+									if (bgLayerName[curSelected] == stuff.name)
 									{
 										if (!stuff.onFront)
 										{
@@ -564,7 +591,7 @@ class BackgroundEditorState extends MusicBeatState
 					deleted = true;
 							for (stuff in stageData.layers)
 								{
-									if (bgLayerName[curSelected] == stuff.image)
+									if (bgLayerName[curSelected] == stuff.name)
 										{
 											if (stuff.onFront)
 											{
@@ -766,6 +793,8 @@ class BackgroundEditorState extends MusicBeatState
 	var tempMap:Map<String, Bool> = new Map<String, Bool>();
 
 	var scaleStepper:FlxUINumericStepper;
+	var scrollStepperX:FlxUINumericStepper;
+	var scrollStepperY:FlxUINumericStepper;
 	var flipXCheckBox:FlxUICheckBox;
 
 	function addUI()
@@ -780,27 +809,51 @@ class BackgroundEditorState extends MusicBeatState
 			//saveBGButton.cameras = [camHUD];
 
 			imageInputText = new FlxUIInputText(saveBGButton.x - 10, saveBGButton.y + 25, 200, 'stagefront', 8);
-			animInputText = new FlxUIInputText(imageInputText.x, imageInputText.y + 25, 200, 'animation', 8);
+			nameInputText = new FlxUIInputText(imageInputText.x, imageInputText.y + 25, 200, 'asset_name', 8);
 			addImageButton = new FlxButton(saveBGButton.x + 100, saveBGButton.y, "Add Image", function()
 			{
-				addImage(imageInputText.text, false, animInputText.text);
+				addImage(nameInputText.text, imageInputText.text, false);
 				reloadStageData();
 			});
-			addImageOnTopButton = new FlxButton(addImageButton.x + 100, saveBGButton.y, "Add Image", function()
+			addImageOnTopButton = new FlxButton(addImageButton.x, saveBGButton.y - 100, "Add Image", function()
 			{
-				addImage(imageInputText.text, true, animInputText.text);
+				if (bgLayerName.contains(nameInputText.text))
+					{
+						nameInputText.text = nameInputText.text + "_extra";
+					}
+				addImage(nameInputText.text, imageInputText.text, true);
 				reloadStageData();
 			});
 			scaleStepper = new FlxUINumericStepper(saveBGButton.x - 10, saveBGButton.y + 100, 0.1, 1, 0.05, 10, 1);
-			//flipXCheckBox = new FlxUICheckBox(scaleStepper.x + 10, scaleStepper.y);
-
+			scrollStepperX = new FlxUINumericStepper(scaleStepper.x + 75, saveBGButton.y + 100, 0.1, 1, 0.05, 10, 1);
+			scrollStepperY = new FlxUINumericStepper(scrollStepperX.x, scrollStepperX.y + 40, 0.1, 1, 0.05, 10, 1);
+			flipXCheckBox = new FlxUICheckBox(scaleStepper.x, scaleStepper.y + 20, null, null, "Flip X", 50);
+			bgLayer.forEach(function(layer:BGSprite)
+				{
+					if (layer.ID == curSelected)
+						flipXCheckBox.checked = layer.flipX;
+				});
+			flipXCheckBox.callback = function(){
+				for (stuff in stageData.layers)
+					{
+						if (bgLayerName[curSelected] == stuff.name)
+							{
+								stuff.flipX = !stuff.flipX;
+							}
+					}
+				updateLayerData();
+				reloadStageData();
+			};
 			scaleStepper.scrollFactor.set();
+			scrollStepperX.scrollFactor.set();
+			scrollStepperY.scrollFactor.set();
+			flipXCheckBox.scrollFactor.set();
 			imageInputText.updateHitbox();
-			animInputText.updateHitbox();
+			nameInputText.updateHitbox();
 			addImageButton.updateHitbox();
 			addImageOnTopButton.updateHitbox();
 			imageInputText.scrollFactor.set();
-			animInputText.scrollFactor.set();
+			nameInputText.scrollFactor.set();
 			addImageButton.scrollFactor.set();
 			addImageOnTopButton.scrollFactor.set();
 
@@ -829,10 +882,15 @@ class BackgroundEditorState extends MusicBeatState
 			blockPressWhileScrolling.push(stageDropDown);
 
 			tab_group.add(new FlxText(15, scaleStepper.y - 18, 0, 'Scale:'));
+			tab_group.add(new FlxText(scrollStepperX.x, scrollStepperX.y - 18, 0, 'Scroll X:'));
+			tab_group.add(new FlxText(scrollStepperY.x, scrollStepperY.y - 18, 0, 'Scroll Y:'));
 			tab_group.add(scaleStepper);
+			tab_group.add(scrollStepperX);
+			tab_group.add(scrollStepperY);
+			tab_group.add(flipXCheckBox);
 			tab_group.add(saveBGButton);
 			tab_group.add(imageInputText);
-			tab_group.add(animInputText);
+			tab_group.add(nameInputText);
 			tab_group.add(addImageButton);
 			tab_group.add(addImageOnTopButton);
 			tab_group.add(stageDropDown);
@@ -904,7 +962,10 @@ class BackgroundEditorState extends MusicBeatState
 		for (stuff in layerArray)
 			{
 				//scaleStepper.value = stuff.scale;
-				layerName = stuff.image;
+				layerName = stuff.name;
+				if (bgLayerName.contains(stuff.name))
+				bgLayerName.push(layerName + '_extra');
+				else
 				bgLayerName.push(layerName);
 				layer = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
 				if (stuff.animation != "")
@@ -936,6 +997,13 @@ class BackgroundEditorState extends MusicBeatState
 		remove(dad);
 		remove(boyfriend);
 		spawnCharacters();
+		for (stuff in stageData.layers)
+			{
+				if (bgLayerName[curSelected] == stuff.name)
+					{
+						flipXCheckBox.checked = stuff.flipX;
+					}
+			}
 	}
 
     function startCharacterPos(char:Character, ?gfCheck:Bool = false) {
@@ -952,18 +1020,21 @@ class BackgroundEditorState extends MusicBeatState
 		{
 			for (stuff in stageData.layers)
 				{
-					if (bgLayerName[curSelected] == stuff.image)
+					if (bgLayerName[curSelected] == stuff.name)
 						{
 							stuff.offset[0] = sillyLayer_X;
 							stuff.offset[1] = sillyLayer_Y;
 							stuff.scale = scaleStepper.value;
+							stuff.scrollfactor[0] = scrollStepperX.value;
+							stuff.scrollfactor[1] = scrollStepperY.value;
 						}
 				}
 		}
 
-	function addImage(file:String, front:Bool, ?animation:String = "")
+	function addImage(named:String, file:String, front:Bool, ?animation:String = "")
 		{
 			var newImage:LayerArray = {
+				name: named,
 				image: file,
 				animation: animation,
 				flipX: false,

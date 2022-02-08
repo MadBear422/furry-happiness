@@ -25,6 +25,7 @@ typedef StageFile = {
 	var opponent:Array<Dynamic>;
 }
 typedef LayerArray = {
+	var name:String;
 	var image:String;
 	var animation:String;
 	var flipX:Bool;

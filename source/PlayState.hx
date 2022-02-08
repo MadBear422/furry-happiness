@@ -454,6 +454,7 @@ class PlayState extends MusicBeatState
 					if (!stuff.onFront)
 					{
 						var layer:BGSprite = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
+						layer.flipX = stuff.flipX;
 						if (stuff.animation != "")
 						{
 							layer.frames = Paths.getSparrowAtlas(stuff.image);
