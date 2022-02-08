@@ -287,7 +287,7 @@ class BackgroundEditorState extends MusicBeatState
 		];
 
 		UI_box = new FlxUITabMenu(null, tabs, true);
-		UI_box.cameras = [camHUD];
+		UI_box.cameras = [camMenu];
 
 		UI_box.resize(350, 250);
 		UI_box.x = (FlxG.width - 275) - 100;
@@ -822,11 +822,8 @@ class BackgroundEditorState extends MusicBeatState
 			nameInputText = new FlxUIInputText(imageInputText.x, imageInputText.y + 25, 200, 'asset_name');
 			addImageButton = new FlxButton(saveBGButton.x + 100, saveBGButton.y, "Add Image", function()
 			{
-				if (Assets.exists(Paths.getPath('images/' + imageInputText + '.png', IMAGE), IMAGE))
-					{
-						addImage(nameInputText.text, imageInputText.text, false);
+					addImage(nameInputText.text, imageInputText.text, false);
 					reloadStageData();
-					}
 			});
 			addImageOnTopButton = new FlxButton(addImageButton.x, saveBGButton.y - 100, "Add Image", function()
 			{
