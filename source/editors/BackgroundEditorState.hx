@@ -129,8 +129,8 @@ class BackgroundEditorState extends MusicBeatState
 		camMenu = new FlxCamera();
 		camMenu.bgColor.alpha = 0;
 
-		FlxG.cameras.add(camMenu);
 		FlxG.cameras.reset(camGame);
+		FlxG.cameras.add(camMenu);
 		FlxG.cameras.add(camHUD);
 
 		FlxCamera.defaultCameras = [camGame];
