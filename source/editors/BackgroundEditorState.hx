@@ -6,6 +6,7 @@ import openfl.events.IOErrorEvent;
 #if desktop
 import Discord.DiscordClient;
 #end
+import openfl.utils.Assets;
 import haxe.Json;
 import flixel.util.FlxColor;
 import haxe.format.JsonParser;
@@ -128,10 +129,9 @@ class BackgroundEditorState extends MusicBeatState
 		camMenu = new FlxCamera();
 		camMenu.bgColor.alpha = 0;
 
-
+		FlxG.cameras.add(camMenu);
 		FlxG.cameras.reset(camGame);
 		FlxG.cameras.add(camHUD);
-		FlxG.cameras.add(camMenu);
 
 		FlxCamera.defaultCameras = [camGame];
 
@@ -287,7 +287,7 @@ class BackgroundEditorState extends MusicBeatState
 		];
 
 		UI_box = new FlxUITabMenu(null, tabs, true);
-		UI_box.cameras = [camMenu];
+		UI_box.cameras = [camHUD];
 
 		UI_box.resize(350, 250);
 		UI_box.x = (FlxG.width - 275) - 100;
@@ -296,8 +296,9 @@ class BackgroundEditorState extends MusicBeatState
 		add(UI_box);
 		addUI();
 
-		layerNum = new FlxText(FlxG.width - 1200, FlxG.height - 700, 0,
-			"Layer: " + curSelected, 12);
+		layerNum = new FlxText(100, FlxG.height - 700, 0,
+			"Layer: " + bgLayerName[curSelected], 12);
+			trace(layerNum.x);
 		layerNum.cameras = [camHUD];
 		layerNum.setFormat(null, 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		layerNum.scrollFactor.set();
@@ -450,7 +451,7 @@ class BackgroundEditorState extends MusicBeatState
 		}
 
 	function reloadText () {
-		layerNum.text = "Layer: " + curSelected;
+		layerNum.text = "Layer: " + bgLayerName[curSelected];
 		layerPosNum.text = "" + sillyLayer_X + "\n" + sillyLayer_Y;
 		dadPosNum.text = "" + stageData.opponent[0] + "\n" + stageData.opponent[1];
 		bfPosNum.text = "" + stageData.boyfriend[0] + "\n" + stageData.boyfriend[1];
@@ -462,7 +463,7 @@ class BackgroundEditorState extends MusicBeatState
 		var offsetPosGf:Array<Dynamic> = updatePosArrayText(stageData.girlfriend, gf.positionArray);
 		var offsetPosBf:Array<Dynamic> = updatePosArrayText(stageData.boyfriend, boyfriend.positionArray);
 
-		layerNum.text = "Layer: " + curSelected;
+		layerNum.text = "Layer: " + bgLayerName[curSelected];
 		layerPosNum.text = "" + sillyLayer_X + "\n" + sillyLayer_Y;
 		dadPosNum.text = "" + offsetPosDad[0] + "\n" + offsetPosDad[1];
 		bfPosNum.text = "" + offsetPosBf[0] + "\n" + offsetPosBf[1];
@@ -563,7 +564,7 @@ class BackgroundEditorState extends MusicBeatState
 			else
 				{
 					layer.shader = newShader.shader;
-					layer.alpha = 0.5;
+					layer.alpha = 0.25;
 				}
 		});
 		bgLayerInFront.forEach(function(layer:BGSprite)
@@ -612,6 +613,15 @@ class BackgroundEditorState extends MusicBeatState
 				}
 		});
 		deleted = false;
+
+		if (holdingObjectType != null)
+			{
+				UI_box.alpha = 0.25;
+			}
+		else
+			{
+				UI_box.alpha = 1;
+			}
 
 		// Return back to editor
 		if (FlxG.keys.justPressed.ESCAPE)
@@ -808,12 +818,15 @@ class BackgroundEditorState extends MusicBeatState
 			});
 			//saveBGButton.cameras = [camHUD];
 
-			imageInputText = new FlxUIInputText(saveBGButton.x - 10, saveBGButton.y + 25, 200, 'stagefront', 8);
-			nameInputText = new FlxUIInputText(imageInputText.x, imageInputText.y + 25, 200, 'asset_name', 8);
+			imageInputText = new FlxUIInputText(saveBGButton.x - 10, saveBGButton.y + 25, 200, 'backgrounds/image_name');
+			nameInputText = new FlxUIInputText(imageInputText.x, imageInputText.y + 25, 200, 'asset_name');
 			addImageButton = new FlxButton(saveBGButton.x + 100, saveBGButton.y, "Add Image", function()
 			{
-				addImage(nameInputText.text, imageInputText.text, false);
-				reloadStageData();
+				if (Assets.exists(Paths.getPath('images/' + imageInputText + '.png', IMAGE), IMAGE))
+					{
+						addImage(nameInputText.text, imageInputText.text, false);
+					reloadStageData();
+					}
 			});
 			addImageOnTopButton = new FlxButton(addImageButton.x, saveBGButton.y - 100, "Add Image", function()
 			{
@@ -844,18 +857,6 @@ class BackgroundEditorState extends MusicBeatState
 				updateLayerData();
 				reloadStageData();
 			};
-			scaleStepper.scrollFactor.set();
-			scrollStepperX.scrollFactor.set();
-			scrollStepperY.scrollFactor.set();
-			flipXCheckBox.scrollFactor.set();
-			imageInputText.updateHitbox();
-			nameInputText.updateHitbox();
-			addImageButton.updateHitbox();
-			addImageOnTopButton.updateHitbox();
-			imageInputText.scrollFactor.set();
-			nameInputText.scrollFactor.set();
-			addImageButton.scrollFactor.set();
-			addImageOnTopButton.scrollFactor.set();
 
 
 			#if MODS_ALLOWED
@@ -892,7 +893,7 @@ class BackgroundEditorState extends MusicBeatState
 			tab_group.add(imageInputText);
 			tab_group.add(nameInputText);
 			tab_group.add(addImageButton);
-			tab_group.add(addImageOnTopButton);
+			//tab_group.add(addImageOnTopButton);
 			tab_group.add(stageDropDown);
 			UI_box.addGroup(tab_group);
 		}
@@ -923,8 +924,9 @@ class BackgroundEditorState extends MusicBeatState
 		stageData.boyfriend[1] = boyfriend.y;
 		stageData.opponent[0] = dad.x;
 		stageData.opponent[1] = dad.y;
-		
+		updateOffsetText();
 		updateText();
+		reloadText();
 	}
 
 	/*override function beatHit()
