@@ -447,26 +447,23 @@ class PlayState extends MusicBeatState
 		add(bgLayer);
 
 		var layerArray = stageData.layers;
-		for (i in 0...layerArray.length)
+		for (stuff in layerArray)
+		{
+			if (!stuff.onFront)
 			{
-				for (stuff in layerArray)
+				var layer:BGSprite = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
+				layer.setGraphicSize(Std.int(layer.width * stuff.scale));
+				layer.updateHitbox();
+				layer.flipX = stuff.flipX;
+				if (stuff.animation != "")
 				{
-					if (!stuff.onFront)
-					{
-						var layer:BGSprite = new BGSprite(stuff.image, stuff.offset[0], stuff.offset[1], stuff.scrollfactor[0], stuff.scrollfactor[1]);
-						layer.setGraphicSize(Std.int(layer.width * stuff.scale));
-						layer.updateHitbox();
-						layer.flipX = stuff.flipX;
-						/*if (stuff.animation != "")
-						{
-							layer.frames = Paths.getSparrowAtlas(stuff.image);
-							layer.animation.addByPrefix('anim', stuff.animation, 24, true);
-							layer.animation.play('anim', true);
-						}*/
-						bgLayer.add(layer);
-					}
+					layer.frames = Paths.getSparrowAtlas(stuff.image);
+					layer.animation.addByPrefix('anim', stuff.animation, 24, true);
+					layer.animation.play('anim', true);
 				}
+				bgLayer.add(layer);
 			}
+		}
 		
 		boyfriendGroup = new FlxSpriteGroup(BF_X, BF_Y);
 		dadGroup = new FlxSpriteGroup(DAD_X, DAD_Y);
@@ -766,8 +763,6 @@ class PlayState extends MusicBeatState
 		add(bgLayerInFront);
 
 		var layerArray = stageData.layers;
-		for (i in 0...layerArray.length)
-		{
 			for (stuff in layerArray)
 			{
 				if (stuff.onFront)
@@ -782,7 +777,6 @@ class PlayState extends MusicBeatState
 					bgLayerInFront.add(layer);
 				}
 			}
-		}
 		
 		if(curStage == 'spooky') {
 			add(halloweenWhite);

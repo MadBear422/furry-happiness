@@ -95,7 +95,6 @@ class BackgroundEditorState extends MusicBeatState
 	var imageInputText:FlxUIInputText;
 	var nameInputText:FlxUIInputText;
 	var addImageButton:FlxButton;
-	var addImageOnTopButton:FlxButton;
 
 	var layer:BGSprite;
 	var layerName:String;
@@ -404,12 +403,43 @@ class BackgroundEditorState extends MusicBeatState
 							{
 								flipXCheckBox.checked = true;
 							}
+						if (stuff.onFront == false)
+							{
+								addImageOnTopCheck.checked = false;
+							}
+						else
+							{
+								addImageOnTopCheck.checked = true;
+							}
 					}
 			}
 	}
+
+	function highlightLayer()
+		{
+			bgLayer.forEach(function(layer:BGSprite)
+				{
+					if (layer.ID == curSelected)
+					layer.shader = newShader.shader;
+			});
+			bgLayerInFront.forEach(function(layer:BGSprite)
+				{
+					if (layer.ID == curSelected)
+					layer.shader = newShader.shader;
+			});
+		}
+
 	function unhighlightLayer()
 		{
 			bgLayer.forEach(function(layer:BGSprite)
+				{
+					if (layer.ID == curSelected)
+					{
+						layer.shader = oldShader.shader;
+					}
+				});
+
+			bgLayerInFront.forEach(function(layer:BGSprite)
 				{
 					if (layer.ID == curSelected)
 					{
@@ -845,6 +875,7 @@ class BackgroundEditorState extends MusicBeatState
 	var scrollStepperX:FlxUINumericStepper;
 	var scrollStepperY:FlxUINumericStepper;
 	var flipXCheckBox:FlxUICheckBox;
+	var addImageOnTopCheck:FlxUICheckBox;
 
 	function addUI()
 		{
@@ -864,19 +895,11 @@ class BackgroundEditorState extends MusicBeatState
 					addImage(nameInputText.text, imageInputText.text, false);
 					reloadStageData();
 			});
-			addImageOnTopButton = new FlxButton(addImageButton.x, saveBGButton.y - 100, "Add Image", function()
-			{
-				if (bgLayerName.contains(nameInputText.text))
-					{
-						nameInputText.text = nameInputText.text + "_extra";
-					}
-				addImage(nameInputText.text, imageInputText.text, true);
-				reloadStageData();
-			});
 			scaleStepper = new FlxUINumericStepper(saveBGButton.x - 10, saveBGButton.y + 100, 0.1, 1, 0.05, 10, 1);
 			scrollStepperX = new FlxUINumericStepper(scaleStepper.x + 75, saveBGButton.y + 100, 0.1, 1, 0.05, 10, 1);
 			scrollStepperY = new FlxUINumericStepper(scrollStepperX.x, scrollStepperX.y + 40, 0.1, 1, 0.05, 10, 1);
 			flipXCheckBox = new FlxUICheckBox(scaleStepper.x, scaleStepper.y + 20, null, null, "Flip X", 50);
+			addImageOnTopCheck = new FlxUICheckBox(flipXCheckBox.x, flipXCheckBox.y + 20, null, null, "Front", 50);
 			bgLayer.forEach(function(layer:BGSprite)
 				{
 					if (layer.ID == curSelected)
@@ -895,6 +918,19 @@ class BackgroundEditorState extends MusicBeatState
 				highlightLayer();
 			};
 
+			addImageOnTopCheck.callback = function(){
+				for (stuff in stageData.layers)
+					{
+						if (bgLayerName[curSelected] == stuff.name)
+							{
+								stuff.onFront = !stuff.onFront;
+							}
+					}
+				//changeStage();
+				updateLayerData();
+				reloadStageData();
+				highlightLayer();
+			};
 
 			#if MODS_ALLOWED
 			var directories:Array<String> = [Paths.mods('stages/'), Paths.mods(Paths.currentModDirectory + '/stages/'), Paths.getPreloadPath('stages/')];
@@ -924,6 +960,7 @@ class BackgroundEditorState extends MusicBeatState
 			{
 				unhighlightLayer();
 				curStage = stages[Std.parseInt(character)];
+				stageData = StageData.getStageFile(curStage);
 				changeStage();
 				reloadStageData();
 				layerDropDown.setData(FlxUIDropDownMenuCustom.makeStrIdLabelArray(bgLayerName, true));
@@ -954,7 +991,7 @@ class BackgroundEditorState extends MusicBeatState
 			tab_group.add(imageInputText);
 			tab_group.add(nameInputText);
 			tab_group.add(addImageButton);
-			//tab_group.add(addImageOnTopButton);
+			tab_group.add(addImageOnTopCheck);
 			tab_group.add(layerDropDown);
 			tab_group.add(stageDropDown);
 			UI_box.addGroup(tab_group);
@@ -1053,17 +1090,7 @@ class BackgroundEditorState extends MusicBeatState
 			reloadText();
 	}
 
-	function highlightLayer()
-		{
-			bgLayer.forEach(function(layer:BGSprite)
-				{
-					if (layer.ID == curSelected)
-					layer.shader = newShader.shader;
-			});
-		}
-
 	function changeStage() {
-		stageData = StageData.getStageFile(curStage);
 		remove(gf);
 		remove(dad);
 		remove(boyfriend);
@@ -1074,6 +1101,7 @@ class BackgroundEditorState extends MusicBeatState
 				if (bgLayerName[curSelected] == stuff.name)
 					{
 						flipXCheckBox.checked = stuff.flipX;
+						addImageOnTopCheck.checked = stuff.onFront;
 					}
 			}
 	}
